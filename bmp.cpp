@@ -157,5 +157,16 @@ void BMP::SetHeight(int32_t height) {
   int32_t old_height = dib_header_.height_abs;
   dib_header_.height_abs = height;
   bitmap_.resize(height);
-  for (int32_t i = old_height; i < height; i++) bitmap_[i].resize(dib_header_.width_abs);
+  for (int32_t i = old_height; i < height; i++)
+    bitmap_[i].resize(dib_header_.width_abs);
+}
+
+void BMP::GrayScale() {
+// #pragma omp parallel for schedule(guided)
+  for (int i = 0; i < dib_header_.height_abs; i++) {
+    for (int j = 0; j < dib_header_.width_abs; j++)
+      bitmap_[i][j].r = bitmap_[i][j].g = bitmap_[i][j].b =
+          bitmap_[i][j].r * 0.299 + bitmap_[i][j].g * 0.587 +
+          bitmap_[i][j].b * 0.114;
+  }
 }

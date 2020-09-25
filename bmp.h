@@ -46,4 +46,6 @@ class BMP {
 
   void SetWidth(int32_t width);
   void SetHeight(int32_t height);
+
+  void GrayScale();
 };
