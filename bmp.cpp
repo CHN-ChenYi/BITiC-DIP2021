@@ -1,6 +1,6 @@
 #include "bmp.h"
 
-#include <iostream>
+#include <cstring>
 #include <stdexcept>
 
 void BMPHeader::read(std::ifstream &file, std::streampos offset,
@@ -63,7 +63,12 @@ void DIBHeader::write(std::ofstream &file) const {
   file.write((char *)&clr_important, sizeof(clr_important));
 }
 
-BMP::BMP() {}
+BMP::BMP() {
+  memset(&bmp_header_, 0, sizeof(bmp_header_));
+  memset(&dib_header_, 0, sizeof(dib_header_));
+  palette_.resize(0);
+  bitmap_.resize(0);
+}
 
 BMP::BMP(const char filename[]) { read(filename); }
 
@@ -76,13 +81,13 @@ void BMP::read(const char filename[]) {
   bmp_header_.read(file);
   dib_header_.read(file);
 
-  for (unsigned i = 0; i < dib_header_.clr_used; i++) { // TODO: test palette
+  for (unsigned i = 0; i < dib_header_.clr_used; i++) {  // TODO: test palette
     RGBColor rgb;
     uint8_t rgb_reserved;
-    file.read((char*)&rgb.b, sizeof(rgb.b));
-    file.read((char*)&rgb.g, sizeof(rgb.g));
-    file.read((char*)&rgb.r, sizeof(rgb.r));
-    file.read((char*)&rgb_reserved, sizeof(rgb_reserved));
+    file.read((char *)&rgb.b, sizeof(rgb.b));
+    file.read((char *)&rgb.g, sizeof(rgb.g));
+    file.read((char *)&rgb.r, sizeof(rgb.r));
+    file.read((char *)&rgb_reserved, sizeof(rgb_reserved));
     palette_.push_back(rgb);
   }
 
@@ -125,7 +130,7 @@ void BMP::write(const char filename[]) {
   dib_header_.planes = 1;
   dib_header_.compression = 0;
   dib_header_.x_pels_per_meter = 10000;  // TODO: choose a reasonable value
-  dib_header_.y_pels_per_meter = 10000;    // TODO: choose a reasonable value
+  dib_header_.y_pels_per_meter = 10000;  // TODO: choose a reasonable value
   dib_header_.clr_used = 0;
   dib_header_.clr_important = 0;
   dib_header_.write(file);
@@ -141,4 +146,16 @@ void BMP::write(const char filename[]) {
   }
 
   file.close();
+}
+
+void BMP::SetWidth(int32_t width) {
+  dib_header_.width_abs = width;
+  for (int32_t i = 0; i < dib_header_.height_abs; i++) bitmap_[i].resize(width);
+}
+
+void BMP::SetHeight(int32_t height) {
+  int32_t old_height = dib_header_.height_abs;
+  dib_header_.height_abs = height;
+  bitmap_.resize(height);
+  for (int32_t i = old_height; i < height; i++) bitmap_[i].resize(dib_header_.width_abs);
 }

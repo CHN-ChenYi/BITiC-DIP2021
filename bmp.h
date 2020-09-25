@@ -38,6 +38,12 @@ class BMP {
   BMP();
   BMP(const char filename[]);
   ~BMP();
+  operator std::vector<std::vector<RGBColor>>() { return bitmap_; }
+  std::vector<RGBColor> &operator[](int index) { return bitmap_[index]; }
+
   void read(const char *filename);
   void write(const char filename[]);
+
+  void SetWidth(int32_t width);
+  void SetHeight(int32_t height);
 };
