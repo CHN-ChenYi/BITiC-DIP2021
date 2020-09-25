@@ -9,6 +9,7 @@ struct BMPHeader {
   uint32_t file_size, application_specific, offset;
   void read(std::ifstream &file, std::streampos offset = 0,
             std::ios_base::seekdir dir = std::ios_base::cur);
+  void write(std::ofstream &file) const;
 };
 
 struct DIBHeader {
@@ -20,6 +21,7 @@ struct DIBHeader {
   uint32_t color_palette_size, important_color_num;
   void read(std::ifstream &file, std::streampos offset = 0,
             std::ios_base::seekdir dir = std::ios_base::cur);
+  void write(std::ofstream &file) const;
 };
 
 // TODO: palette
