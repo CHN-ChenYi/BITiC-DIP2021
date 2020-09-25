@@ -5,20 +5,20 @@
 #include <vector>
 
 struct BMPHeader {
-  uint8_t id_field[2];
-  uint32_t file_size, application_specific, offset;
+  uint8_t type[2];
+  uint32_t size, reserved, offbits;
   void read(std::ifstream &file, std::streampos offset = 0,
             std::ios_base::seekdir dir = std::ios_base::cur);
   void write(std::ofstream &file) const;
 };
 
 struct DIBHeader {
-  uint32_t header_size;
+  uint32_t size;
   int32_t width, height, width_abs, height_abs;
-  uint16_t plane_num, color_depth;
-  uint32_t compression_method, image_size;
-  int32_t horizontal_resolution, vertical_resolution;  // in ppm
-  uint32_t color_palette_size, important_color_num;
+  uint16_t planes, bit_count;
+  uint32_t compression, size_image;
+  int32_t x_pels_per_meter, y_pels_per_meter;  // in ppm
+  uint32_t clr_used, clr_important;
   void read(std::ifstream &file, std::streampos offset = 0,
             std::ios_base::seekdir dir = std::ios_base::cur);
   void write(std::ofstream &file) const;
@@ -33,7 +33,7 @@ struct Pixel {
 class BMP {
   BMPHeader bmp_header_;
   DIBHeader dib_header_;
-  std::vector<std::vector<Pixel>> pixels_;
+  std::vector<std::vector<Pixel>> bitmap_;
 
  public:
   BMP();
