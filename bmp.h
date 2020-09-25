@@ -24,16 +24,15 @@ struct DIBHeader {
   void write(std::ofstream &file) const;
 };
 
-// TODO: palette
-
-struct Pixel {
+struct RGBColor {
   uint8_t r, g, b;
 };
 
 class BMP {
   BMPHeader bmp_header_;
   DIBHeader dib_header_;
-  std::vector<std::vector<Pixel>> bitmap_;
+  std::vector<RGBColor> palette_;
+  std::vector<std::vector<RGBColor>> bitmap_;
 
  public:
   BMP();

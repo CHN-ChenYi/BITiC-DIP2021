@@ -46,7 +46,6 @@ void DIBHeader::read(std::ifstream &file, std::streampos offset,
   file.read((char *)&x_pels_per_meter, sizeof(x_pels_per_meter));
   file.read((char *)&y_pels_per_meter, sizeof(y_pels_per_meter));
   file.read((char *)&clr_used, sizeof(clr_used));
-  if (clr_used != 0) throw std::runtime_error("Unsupported palette.");
   file.read((char *)&clr_important, sizeof(clr_important));
 }
 
@@ -77,9 +76,19 @@ void BMP::read(const char filename[]) {
   bmp_header_.read(file);
   dib_header_.read(file);
 
+  for (unsigned i = 0; i < dib_header_.clr_used; i++) { // TODO: test palette
+    RGBColor rgb;
+    uint8_t rgb_reserved;
+    file.read((char*)&rgb.b, sizeof(rgb.b));
+    file.read((char*)&rgb.g, sizeof(rgb.g));
+    file.read((char*)&rgb.r, sizeof(rgb.r));
+    file.read((char*)&rgb_reserved, sizeof(rgb_reserved));
+    palette_.push_back(rgb);
+  }
+
   file.seekg(bmp_header_.offbits);
   for (int i = 0; i < dib_header_.height_abs; i++)
-    bitmap_.push_back(std::vector<Pixel>(dib_header_.width_abs));
+    bitmap_.push_back(std::vector<RGBColor>(dib_header_.width_abs));
   for (int i = dib_header_.height >= 0 ? 0 : dib_header_.height_abs - 1;
        i >= 0 && i < dib_header_.height_abs;
        dib_header_.height >= 0 ? i++ : i--) {
