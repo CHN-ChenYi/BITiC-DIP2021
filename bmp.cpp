@@ -1,5 +1,6 @@
 #include "bmp.h"
 
+#include <algorithm>
 #include <cstring>
 #include <stdexcept>
 
@@ -148,12 +149,14 @@ void BMP::write(const char filename[]) {
   file.close();
 }
 
-void BMP::SetWidth(int32_t width) {
+void BMP::SetWidth(const int32_t width) {
+  if (width < 0) return;
   dib_header_.width_abs = width;
   for (int32_t i = 0; i < dib_header_.height_abs; i++) bitmap_[i].resize(width);
 }
 
-void BMP::SetHeight(int32_t height) {
+void BMP::SetHeight(const int32_t height) {
+  if (height < 0) return;
   int32_t old_height = dib_header_.height_abs;
   dib_header_.height_abs = height;
   bitmap_.resize(height);
@@ -162,11 +165,40 @@ void BMP::SetHeight(int32_t height) {
 }
 
 void BMP::GrayScale() {
-// #pragma omp parallel for schedule(guided)
+  // #pragma omp parallel for schedule(guided)
   for (int i = 0; i < dib_header_.height_abs; i++) {
     for (int j = 0; j < dib_header_.width_abs; j++)
       bitmap_[i][j].r = bitmap_[i][j].g = bitmap_[i][j].b =
           bitmap_[i][j].r * 0.299 + bitmap_[i][j].g * 0.587 +
           bitmap_[i][j].b * 0.114;
+  }
+}
+
+
+void BMP::ModifyLuminance(decltype(RGBColor::r) delta, bool is_brighter) {
+  for (int i = 0; i < dib_header_.height_abs; i++) {
+    for (int j = 0; j < dib_header_.width_abs; j++) {
+      auto y = bitmap_[i][j].r * 0.299 + bitmap_[i][j].g * 0.587 +
+               bitmap_[i][j].b * 0.114;
+      auto u = bitmap_[i][j].r * -0.147 + bitmap_[i][j].g * -0.289 +
+               bitmap_[i][j].b * -0.435;
+      auto v = bitmap_[i][j].r * 0.615 + bitmap_[i][j].g * -0.515 +
+               bitmap_[i][j].b * -0.100;
+      if (is_brighter)
+        y += delta;
+      else
+        y -= delta;
+      y = std::min<decltype(y)>(y, 255);
+      y = std::max<decltype(y)>(0, y);
+      // TODO: choose which matrix?
+      // inverse matrix
+      bitmap_[i][j].r = y * 1.000 + u * 0.000 + v * 1.140;
+      bitmap_[i][j].g = y * 1.446 + u * 0.513 + v * -0.581;
+      bitmap_[i][j].b = y * -1.299 + u * -2.639 + v * 0.000;
+      // BT.601 SD TV standard
+      // bitmap_[i][j].r = y * 1.000 + u * 0.000 + v * 1.370;
+      // bitmap_[i][j].g = y * 1.000 + u * -0.395 + v * -0.581;
+      // bitmap_[i][j].b = y * 1.000 + u * 2.032 + v * 0.000;
+    }
   }
 }
