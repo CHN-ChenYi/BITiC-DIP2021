@@ -48,5 +48,5 @@ class BMP {
   void SetHeight(const int32_t height);
 
   void GrayScale();
-  void ModifyLuminance(const double delta);
+  void ModifyLuminance(const int delta);
 };
