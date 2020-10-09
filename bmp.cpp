@@ -1,7 +1,20 @@
 #include "bmp.h"
 
+#include <algorithm>
 #include <cstring>
 #include <stdexcept>
+
+template <typename T>
+T Clamp(double x) {
+  double ret = std::min<double>(std::numeric_limits<T>::max(), x);
+  return std::max<double>(std::numeric_limits<T>::min(), ret);
+}
+
+template <typename T>
+T Clamp(T x, T min, T max) {
+  T ret = std::min(max, x);
+  return std::max(min, ret);
+}
 
 void BMPHeader::read(std::ifstream &file, std::streampos offset,
                      std::ios_base::seekdir dir) {
@@ -148,14 +161,55 @@ void BMP::write(const char filename[]) {
   file.close();
 }
 
-void BMP::SetWidth(int32_t width) {
+void BMP::SetWidth(const int32_t width) {
+  if (width < 0) return;
   dib_header_.width_abs = width;
   for (int32_t i = 0; i < dib_header_.height_abs; i++) bitmap_[i].resize(width);
 }
 
-void BMP::SetHeight(int32_t height) {
+void BMP::SetHeight(const int32_t height) {
+  if (height < 0) return;
   int32_t old_height = dib_header_.height_abs;
   dib_header_.height_abs = height;
   bitmap_.resize(height);
-  for (int32_t i = old_height; i < height; i++) bitmap_[i].resize(dib_header_.width_abs);
+  for (int32_t i = old_height; i < height; i++)
+    bitmap_[i].resize(dib_header_.width_abs);
+}
+
+void BMP::GrayScale() {
+  for (int i = 0; i < dib_header_.height_abs; i++) {
+    for (int j = 0; j < dib_header_.width_abs; j++)
+      bitmap_[i][j].r = bitmap_[i][j].g = bitmap_[i][j].b =
+          ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
+               bitmap_[i][j].b * 25) >>
+           8) +
+          16;
+  }
+}
+
+void BMP::ModifyLuminance(const int delta) {
+  for (int i = 0; i < dib_header_.height_abs; i++) {
+    for (int j = 0; j < dib_header_.width_abs; j++) {
+      // BT.601 SD TV standard
+      int y = ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
+                   bitmap_[i][j].b * 25) >>
+               8) +
+              16;
+      int u = ((bitmap_[i][j].r * -38 + bitmap_[i][j].g * -74 +
+                   bitmap_[i][j].b * 112) >>
+               8) +
+              128;
+      int v = ((bitmap_[i][j].r * 112 + bitmap_[i][j].g * -94 +
+                   bitmap_[i][j].b * -18) >>
+               8) +
+              128;
+      y = Clamp(y + delta, 0, 255);
+      const int c = y - 16;
+      const int d = u - 128;
+      const int e = v - 128;
+      bitmap_[i][j].r = Clamp((c * 298 + e * 409 + 128) >> 8, 0, 255);
+      bitmap_[i][j].g = Clamp((c * 298 - d * 100 - e * 208 + 128) >> 8, 0, 255);
+      bitmap_[i][j].b = Clamp((c * 298 + d * 516 + 128) >> 8, 0, 255);
+    }
+  }
 }

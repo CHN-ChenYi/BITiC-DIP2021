@@ -44,6 +44,9 @@ class BMP {
   void read(const char *filename);
   void write(const char filename[]);
 
-  void SetWidth(int32_t width);
-  void SetHeight(int32_t height);
+  void SetWidth(const int32_t width);
+  void SetHeight(const int32_t height);
+
+  void GrayScale();
+  void ModifyLuminance(const int delta);
 };

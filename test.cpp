@@ -7,14 +7,13 @@ using namespace std;
 int main() {
   BMP image;
   image.read("input.bmp");
-  image.write("copy.bmp");
-  BMP image2;
-  image2.SetWidth(2);
-  image2.SetHeight(2);
-  image2[0][0] = RGBColor{0xff, 0, 0};
-  image2[0][1] = RGBColor{0xff, 0xff, 0xff};
-  image2[1][0] = RGBColor{0, 0, 0xff};
-  image2[1][1] = RGBColor{0, 0xff, 0};
-  image2.write("image2.bmp");
+  BMP image2(image);
+  image2.write("copy.bmp");
+  image2.GrayScale();
+  image2.write("grayscale.bmp");
+  int x;
+  cin >> x;
+  image.ModifyLuminance(x);
+  image.write("luminance.bmp");
   return 0;
 }
