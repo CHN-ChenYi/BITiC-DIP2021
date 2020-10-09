@@ -13,8 +13,7 @@ T Clap(double x) {
   return std::max<double>(std::numeric_limits<T>::min(), ret);
 }
 
-template <typename T>
-T Clap(double x, double min, double max) {
+double Clap(double x, double min, double max) {
   double ret = std::min(max, x);
   return std::max(min, ret);
 }
@@ -200,7 +199,7 @@ void BMP::ModifyLuminance(const double delta) {
                bitmap_[i][j].b * 0.436;
       auto v = bitmap_[i][j].r * 0.615 + bitmap_[i][j].g * -0.51499 +
                bitmap_[i][j].b * -0.10001;
-      y = Clap<double>(y + delta, 0, std::numeric_limits<double>::max());
+      y = Clap(y + delta, 0, std::numeric_limits<double>::max());
       bitmap_[i][j].r = Clap<decltype(bitmap_[i][j].r)>(y * 1. + u * 0. + v * 1.13983);
       bitmap_[i][j].g = Clap<decltype(bitmap_[i][j].g)>(y * 1. + u * -0.39465 + v * -0.58060);
       bitmap_[i][j].b = Clap<decltype(bitmap_[i][j].b)>(y * 1. + u * 2.03211 + v * 0.);
