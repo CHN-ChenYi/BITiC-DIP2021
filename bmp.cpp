@@ -3,6 +3,21 @@
 #include <algorithm>
 #include <cstring>
 #include <stdexcept>
+// #include <iostream>
+
+template <typename T>
+T Clap(double x) {
+  // if (x < std::numeric_limits<T>::min() || x > std::numeric_limits<T>::max())
+  //   std::cout << x << std::endl;
+  double ret = std::min<double>(std::numeric_limits<T>::max(), x);
+  return std::max<double>(std::numeric_limits<T>::min(), ret);
+}
+
+template <typename T>
+T Clap(double x, double min, double max) {
+  double ret = std::min(max, x);
+  return std::max(min, ret);
+}
 
 void BMPHeader::read(std::ifstream &file, std::streampos offset,
                      std::ios_base::seekdir dir) {
@@ -175,30 +190,20 @@ void BMP::GrayScale() {
 }
 
 
-void BMP::ModifyLuminance(decltype(RGBColor::r) delta, bool is_brighter) {
+void BMP::ModifyLuminance(const double delta) {
   for (int i = 0; i < dib_header_.height_abs; i++) {
     for (int j = 0; j < dib_header_.width_abs; j++) {
+      // BT.601 SD TV standard
       auto y = bitmap_[i][j].r * 0.299 + bitmap_[i][j].g * 0.587 +
                bitmap_[i][j].b * 0.114;
-      auto u = bitmap_[i][j].r * -0.147 + bitmap_[i][j].g * -0.289 +
-               bitmap_[i][j].b * -0.435;
-      auto v = bitmap_[i][j].r * 0.615 + bitmap_[i][j].g * -0.515 +
-               bitmap_[i][j].b * -0.100;
-      if (is_brighter)
-        y += delta;
-      else
-        y -= delta;
-      y = std::min<decltype(y)>(y, 255);
-      y = std::max<decltype(y)>(0, y);
-      // TODO: choose which matrix?
-      // inverse matrix
-      bitmap_[i][j].r = y * 1.000 + u * 0.000 + v * 1.140;
-      bitmap_[i][j].g = y * 1.446 + u * 0.513 + v * -0.581;
-      bitmap_[i][j].b = y * -1.299 + u * -2.639 + v * 0.000;
-      // BT.601 SD TV standard
-      // bitmap_[i][j].r = y * 1.000 + u * 0.000 + v * 1.370;
-      // bitmap_[i][j].g = y * 1.000 + u * -0.395 + v * -0.581;
-      // bitmap_[i][j].b = y * 1.000 + u * 2.032 + v * 0.000;
+      auto u = bitmap_[i][j].r * -0.14713 + bitmap_[i][j].g * -0.28886 +
+               bitmap_[i][j].b * 0.436;
+      auto v = bitmap_[i][j].r * 0.615 + bitmap_[i][j].g * -0.51499 +
+               bitmap_[i][j].b * -0.10001;
+      y = Clap<double>(y + delta, 0, std::numeric_limits<double>::max());
+      bitmap_[i][j].r = Clap<decltype(bitmap_[i][j].r)>(y * 1. + u * 0. + v * 1.13983);
+      bitmap_[i][j].g = Clap<decltype(bitmap_[i][j].g)>(y * 1. + u * -0.39465 + v * -0.58060);
+      bitmap_[i][j].b = Clap<decltype(bitmap_[i][j].b)>(y * 1. + u * 2.03211 + v * 0.);
     }
   }
 }
