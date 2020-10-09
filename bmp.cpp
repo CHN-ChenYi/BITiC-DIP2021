@@ -3,17 +3,14 @@
 #include <algorithm>
 #include <cstring>
 #include <stdexcept>
-// #include <iostream>
 
 template <typename T>
-T Clap(double x) {
-  // if (x < std::numeric_limits<T>::min() || x > std::numeric_limits<T>::max())
-  //   std::cout << x << std::endl;
+T Clamp(double x) {
   double ret = std::min<double>(std::numeric_limits<T>::max(), x);
   return std::max<double>(std::numeric_limits<T>::min(), ret);
 }
 
-double Clap(double x, double min, double max) {
+double Clamp(double x, double min, double max) {
   double ret = std::min(max, x);
   return std::max(min, ret);
 }
@@ -195,14 +192,14 @@ void BMP::ModifyLuminance(const double delta) {
       // BT.601 SD TV standard
       auto y = bitmap_[i][j].r * 0.299 + bitmap_[i][j].g * 0.587 +
                bitmap_[i][j].b * 0.114;
-      auto u = bitmap_[i][j].r * -0.14713 + bitmap_[i][j].g * -0.28886 +
+      auto u = bitmap_[i][j].r * -0.147 + bitmap_[i][j].g * -0.289 +
                bitmap_[i][j].b * 0.436;
-      auto v = bitmap_[i][j].r * 0.615 + bitmap_[i][j].g * -0.51499 +
-               bitmap_[i][j].b * -0.10001;
-      y = Clap(y + delta, 0, std::numeric_limits<double>::max());
-      bitmap_[i][j].r = Clap<decltype(bitmap_[i][j].r)>(y * 1. + u * 0. + v * 1.13983);
-      bitmap_[i][j].g = Clap<decltype(bitmap_[i][j].g)>(y * 1. + u * -0.39465 + v * -0.58060);
-      bitmap_[i][j].b = Clap<decltype(bitmap_[i][j].b)>(y * 1. + u * 2.03211 + v * 0.);
+      auto v = bitmap_[i][j].r * 0.615 + bitmap_[i][j].g * -0.515 +
+               bitmap_[i][j].b * -0.100;
+      y = Clamp(y + delta, 0, 255);
+      bitmap_[i][j].r = Clamp<decltype(bitmap_[i][j].r)>(y * 1. + u * 0. + v * 1.13983);
+      bitmap_[i][j].g = Clamp<decltype(bitmap_[i][j].g)>(y * 1. + u * -0.39465 + v * -0.58060);
+      bitmap_[i][j].b = Clamp<decltype(bitmap_[i][j].b)>(y * 1. + u * 2.03211 + v * 0.);
     }
   }
 }

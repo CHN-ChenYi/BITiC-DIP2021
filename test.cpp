@@ -11,7 +11,7 @@ int main() {
   image2.write("copy.bmp");
   image2.GrayScale();
   image2.write("grayscale.bmp");
-  image.ModifyLuminance(-200);
+  image.ModifyLuminance(100);
   image.write("luminance.bmp");
   return 0;
 }
