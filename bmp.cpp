@@ -95,6 +95,7 @@ void BMP::read(const char filename[]) {
   bmp_header_.read(file);
   dib_header_.read(file);
 
+  // read palette
   for (unsigned i = 0; i < dib_header_.clr_used; i++) {  // TODO: test palette
     RGBColor rgb;
     uint8_t rgb_reserved;
@@ -105,6 +106,7 @@ void BMP::read(const char filename[]) {
     palette_.push_back(rgb);
   }
 
+  // read image data
   file.seekg(bmp_header_.offbits);
   for (int i = 0; i < dib_header_.height_abs; i++)
     bitmap_.push_back(std::vector<RGBColor>(dib_header_.width_abs));
@@ -149,6 +151,7 @@ void BMP::write(const char filename[]) {
   dib_header_.clr_important = 0;
   dib_header_.write(file);
 
+  // write image data
   file.seekp(bmp_header_.offbits);
   for (int i = 0; i < dib_header_.height_abs; i++) {
     for (int j = 0; j < dib_header_.width_abs; j++) {
@@ -192,6 +195,7 @@ void BMP::ModifyLuminanceLinear(const int delta) {
   for (int i = 0; i < dib_header_.height_abs; i++) {
     for (int j = 0; j < dib_header_.width_abs; j++) {
       // BT.601 SD TV standard
+      // RGB -> Y'UV
       int y = ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
                    bitmap_[i][j].b * 25) >>
                8) +
@@ -204,7 +208,11 @@ void BMP::ModifyLuminanceLinear(const int delta) {
                    bitmap_[i][j].b * -18) >>
                8) +
               128;
+
+      // ModifyLuminance
       y = Clamp(y + delta, 0, 255);
+
+      // Y'UV -> RGB
       const int c = y - 16;
       const int d = u - 128;
       const int e = v - 128;
@@ -219,6 +227,7 @@ void BMP::ModifyLuminanceExponential(const double ratio) {
   for (int i = 0; i < dib_header_.height_abs; i++) {
     for (int j = 0; j < dib_header_.width_abs; j++) {
       // BT.601 SD TV standard
+      // RGB -> Y'UV
       int y = ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
                    bitmap_[i][j].b * 25) >>
                8) +
@@ -231,7 +240,11 @@ void BMP::ModifyLuminanceExponential(const double ratio) {
                    bitmap_[i][j].b * -18) >>
                8) +
               128;
+
+      // ModifyLuminance
       y = Clamp<double>(exp(log(y / 255.0) * ratio) * 255, 0, 255);
+
+      // Y'UV -> RGB
       const int c = y - 16;
       const int d = u - 128;
       const int e = v - 128;
