@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstring>
 #include <stdexcept>
+#include <cmath>
 
 template <typename T>
 T Clamp(double x) {
@@ -187,7 +188,7 @@ void BMP::GrayScale() {
   }
 }
 
-void BMP::ModifyLuminance(const int delta) {
+void BMP::ModifyLuminanceLinear(const int delta) {
   for (int i = 0; i < dib_header_.height_abs; i++) {
     for (int j = 0; j < dib_header_.width_abs; j++) {
       // BT.601 SD TV standard
@@ -204,6 +205,33 @@ void BMP::ModifyLuminance(const int delta) {
                8) +
               128;
       y = Clamp(y + delta, 0, 255);
+      const int c = y - 16;
+      const int d = u - 128;
+      const int e = v - 128;
+      bitmap_[i][j].r = Clamp((c * 298 + e * 409 + 128) >> 8, 0, 255);
+      bitmap_[i][j].g = Clamp((c * 298 - d * 100 - e * 208 + 128) >> 8, 0, 255);
+      bitmap_[i][j].b = Clamp((c * 298 + d * 516 + 128) >> 8, 0, 255);
+    }
+  }
+}
+
+void BMP::ModifyLuminanceExponential(const double ratio) {
+  for (int i = 0; i < dib_header_.height_abs; i++) {
+    for (int j = 0; j < dib_header_.width_abs; j++) {
+      // BT.601 SD TV standard
+      int y = ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
+                   bitmap_[i][j].b * 25) >>
+               8) +
+              16;
+      int u = ((bitmap_[i][j].r * -38 + bitmap_[i][j].g * -74 +
+                   bitmap_[i][j].b * 112) >>
+               8) +
+              128;
+      int v = ((bitmap_[i][j].r * 112 + bitmap_[i][j].g * -94 +
+                   bitmap_[i][j].b * -18) >>
+               8) +
+              128;
+      y = Clamp<double>(exp(log(y / 255.0) * ratio) * 255, 0, 255);
       const int c = y - 16;
       const int d = u - 128;
       const int e = v - 128;
