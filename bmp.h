@@ -50,4 +50,6 @@ class BMP {
   void GrayScale();
   void ModifyLuminanceLinear(const int delta);
   void ModifyLuminanceExponential(const double ratio); // > 1 for darker
+
+  void Binarization();
 };

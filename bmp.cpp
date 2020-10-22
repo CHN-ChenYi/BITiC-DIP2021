@@ -1,9 +1,9 @@
 #include "bmp.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <stdexcept>
-#include <cmath>
 
 template <typename T>
 T Clamp(double x) {
@@ -185,7 +185,7 @@ void BMP::GrayScale() {
     for (int j = 0; j < dib_header_.width_abs; j++)
       bitmap_[i][j].r = bitmap_[i][j].g = bitmap_[i][j].b =
           ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
-               bitmap_[i][j].b * 25) >>
+            bitmap_[i][j].b * 25) >>
            8) +
           16;
   }
@@ -197,15 +197,15 @@ void BMP::ModifyLuminanceLinear(const int delta) {
       // BT.601 SD TV standard
       // RGB -> Y'UV
       int y = ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
-                   bitmap_[i][j].b * 25) >>
+                bitmap_[i][j].b * 25) >>
                8) +
               16;
       int u = ((bitmap_[i][j].r * -38 + bitmap_[i][j].g * -74 +
-                   bitmap_[i][j].b * 112) >>
+                bitmap_[i][j].b * 112) >>
                8) +
               128;
       int v = ((bitmap_[i][j].r * 112 + bitmap_[i][j].g * -94 +
-                   bitmap_[i][j].b * -18) >>
+                bitmap_[i][j].b * -18) >>
                8) +
               128;
 
@@ -229,15 +229,15 @@ void BMP::ModifyLuminanceExponential(const double ratio) {
       // BT.601 SD TV standard
       // RGB -> Y'UV
       int y = ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
-                   bitmap_[i][j].b * 25) >>
+                bitmap_[i][j].b * 25) >>
                8) +
               16;
       int u = ((bitmap_[i][j].r * -38 + bitmap_[i][j].g * -74 +
-                   bitmap_[i][j].b * 112) >>
+                bitmap_[i][j].b * 112) >>
                8) +
               128;
       int v = ((bitmap_[i][j].r * 112 + bitmap_[i][j].g * -94 +
-                   bitmap_[i][j].b * -18) >>
+                bitmap_[i][j].b * -18) >>
                8) +
               128;
 
@@ -251,6 +251,56 @@ void BMP::ModifyLuminanceExponential(const double ratio) {
       bitmap_[i][j].r = Clamp((c * 298 + e * 409 + 128) >> 8, 0, 255);
       bitmap_[i][j].g = Clamp((c * 298 - d * 100 - e * 208 + 128) >> 8, 0, 255);
       bitmap_[i][j].b = Clamp((c * 298 + d * 516 + 128) >> 8, 0, 255);
+    }
+  }
+}
+
+inline uint8_t OtsuMethod(const unsigned histogram[256], const int pixel_count) {
+  double probability[256], mean[256];
+  probability[0] = 1.0 * histogram[0] / pixel_count;
+  mean[0] = 0;
+  for (int i = 1; i < 256; i++) {
+    const double prob = 1.0 * histogram[i] / pixel_count;
+    probability[i] = probability[i - 1] + prob;
+    mean[i] = mean[i - 1] + i * prob;
+  }
+  uint8_t threshold = std::numeric_limits<uint8_t>::min();
+  double max_between = std::numeric_limits<double>::min(), between;
+  for (int i = 0; i < 256 && probability[i] != 1; i++) {
+    if (probability[i] != 0) {
+      between = pow(mean[255] * probability[i] - mean[i], 2) / (probability[i] * (1.0 - probability[i]));
+      if (max_between < between) {
+        max_between = between;
+        threshold = i;
+      }
+    }
+  }
+  return threshold;
+}
+
+// TODO: test
+void BMP::Binarization() {
+  const int pixel_count = dib_header_.height_abs * dib_header_.width_abs;
+  uint8_t y[pixel_count];
+  unsigned histogram[256];
+  memset(histogram, 0, sizeof(histogram));
+  for (int i = 0; i < dib_header_.height_abs; i++) {
+    for (int j = 0; j < dib_header_.width_abs; j++) {
+      const int index = i * dib_header_.width_abs + j;
+      y[index] = ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
+                   bitmap_[i][j].b * 25) >>
+                  8) +
+                 16;
+      histogram[y[index]]++;
+    }
+  }
+  const uint8_t threshold = OtsuMethod(histogram, pixel_count);
+  for (int i = 0; i < dib_header_.height_abs; i++) {
+    for (int j = 0; j < dib_header_.width_abs; j++) {
+      if (y[i * dib_header_.width_abs + j] < threshold)
+        bitmap_[i][j] = RGBColor{0, 0, 0};
+      else
+        bitmap_[i][j] = RGBColor{255, 255, 255};
     }
   }
 }
