@@ -29,6 +29,7 @@ struct RGBColor {
   uint8_t r, g, b;
 };
 
+// bottom-left is the origin
 class BMP {
   BMPHeader bmp_header_;
   DIBHeader dib_header_;
