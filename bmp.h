@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <fstream>
+#include <utility>
 #include <vector>
 
 struct BMPHeader {
@@ -28,11 +29,13 @@ struct RGBColor {
   uint8_t r, g, b;
 };
 
+// bottom-left is the origin
 class BMP {
   BMPHeader bmp_header_;
   DIBHeader dib_header_;
   std::vector<RGBColor> palette_;
   std::vector<std::vector<RGBColor>> bitmap_;
+  uint8_t OtsuMethod(const unsigned histogram[256], const int pixel_count);
 
  public:
   BMP();
@@ -56,4 +59,13 @@ class BMP {
   void Binarization();  // global version
   void Binarization(const unsigned window_side_length,
                     const unsigned overlap_length);  // local adaptive version
+
+  void Erosion(std::vector<std::pair<int, int>>
+                   &structing_element);  // must be binarized before calling
+  void Dilation(std::vector<std::pair<int, int>>
+                    &structing_element);  // must be binarized before calling
+  void Opening(std::vector<std::pair<int, int>>
+                    &structing_element);  // must be binarized before calling
+  void Closing(std::vector<std::pair<int, int>>
+                    &structing_element);  // must be binarized before calling
 };
