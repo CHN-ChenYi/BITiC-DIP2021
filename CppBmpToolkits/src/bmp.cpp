@@ -1,4 +1,4 @@
-#include "bmp.h"
+#include "bmp.hpp"
 
 #include <algorithm>
 #include <cmath>
