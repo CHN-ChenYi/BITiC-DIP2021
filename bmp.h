@@ -44,12 +44,16 @@ class BMP {
   void read(const char *filename);
   void write(const char filename[]);
 
+  int32_t width();
+  int32_t height();
   void SetWidth(const int32_t width);
   void SetHeight(const int32_t height);
 
   void GrayScale();
   void ModifyLuminanceLinear(const int delta);
-  void ModifyLuminanceExponential(const double ratio); // > 1 for darker
+  void ModifyLuminanceExponential(const double ratio);  // > 1 for darker
 
-  void Binarization();
+  void Binarization();  // global version
+  void Binarization(const unsigned window_side_length,
+                    const unsigned overlap_length);  // local adaptive version
 };
