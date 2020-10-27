@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "bmp.hpp"
+#include "BITiC.hpp"
 
 template <typename T>
 T Clamp(double x) {

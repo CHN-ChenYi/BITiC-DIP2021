@@ -2,7 +2,7 @@
 #include <cmath>
 #include <cstring>
 
-#include "bmp.hpp"
+#include "BITiC.hpp"
 
 uint8_t BMP::OtsuMethod(const unsigned histogram[256], const int pixel_count) {
   double probability[256], mean[256];
