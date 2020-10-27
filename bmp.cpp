@@ -369,47 +369,59 @@ void BMP::Binarization(const unsigned window_side_length,
   delete[] y;
 }
 
-void BMP::Erosion(std::vector<std::pair<int, int>> &structing_element) {
-  bool *is_foreground =
-      new bool[dib_header_.height_abs * dib_header_.width_abs];
-  int x_lower_bound = std::numeric_limits<int>::max();
-  int x_upper_bound = std::numeric_limits<int>::min();
-  int y_lower_bound = std::numeric_limits<int>::max();
-  int y_upper_bound = std::numeric_limits<int>::min();
-  for (auto &it : structing_element) {
-    x_lower_bound = std::min(x_lower_bound, it.first);
-    x_upper_bound = std::max(x_upper_bound, it.first);
-    y_lower_bound = std::min(y_lower_bound, it.second);
-    y_upper_bound = std::max(y_upper_bound, it.second);
-  }
-  // erosion
-  for (int i = 0; i < dib_header_.height_abs; i++) {
-    for (int j = 0; j < dib_header_.width_abs; j++) {
-      const int index = i * dib_header_.width_abs + j;
-      if (i + x_lower_bound < 0 ||
-          i + x_upper_bound >= dib_header_.height_abs ||
-          j + y_lower_bound < 0 || j + y_upper_bound >= dib_header_.width_abs) {
-        bitmap_[i][j] = RGBColor{0, 0, 0};
-        continue;
-      }
-      is_foreground[index] = true;
-      for (auto &it : structing_element) {
-        if (!bitmap_[i + it.first][j + it.second].r) {
-          is_foreground[index] = false;
-          break;
-        }
-      }
-    }
-  }
-  // write back
-  for (int i = 0; i < dib_header_.height_abs; i++) {
-    for (int j = 0; j < dib_header_.width_abs; j++) {
-      const int index = i * dib_header_.width_abs + j;
-      if (is_foreground[index])
-        bitmap_[i][j] = RGBColor{255, 255, 255};
-      else
-        bitmap_[i][j] = RGBColor{0, 0, 0};
-    }
-  }
+#define DILATION_OR_EROSION(init_value, condition_expression)             \
+  bool *is_foreground =                                                   \
+      new bool[dib_header_.height_abs * dib_header_.width_abs];           \
+  int x_lower_bound = std::numeric_limits<int>::max();                    \
+  int x_upper_bound = std::numeric_limits<int>::min();                    \
+  int y_lower_bound = std::numeric_limits<int>::max();                    \
+  int y_upper_bound = std::numeric_limits<int>::min();                    \
+  for (auto &it : structing_element) {                                    \
+    x_lower_bound = std::min(x_lower_bound, it.first);                    \
+    x_upper_bound = std::max(x_upper_bound, it.first);                    \
+    y_lower_bound = std::min(y_lower_bound, it.second);                   \
+    y_upper_bound = std::max(y_upper_bound, it.second);                   \
+  }                                                                       \
+  for (int i = 0; i < dib_header_.height_abs; i++) {                      \
+    for (int j = 0; j < dib_header_.width_abs; j++) {                     \
+      const int index = i * dib_header_.width_abs + j;                    \
+      is_foreground[index] = init_value;                                  \
+      for (auto &it : structing_element) {                                \
+        if (i + it.first < 0 || i + it.first >= dib_header_.height_abs || \
+            j + it.second < 0 || j + it.second >= dib_header_.width_abs)  \
+          continue;                                                       \
+        if (condition_expression) {                                       \
+          is_foreground[index] ^= 1;                                      \
+          break;                                                          \
+        }                                                                 \
+      }                                                                   \
+    }                                                                     \
+  }                                                                       \
+  for (int i = 0; i < dib_header_.height_abs; i++) {                      \
+    for (int j = 0; j < dib_header_.width_abs; j++) {                     \
+      const int index = i * dib_header_.width_abs + j;                    \
+      if (is_foreground[index])                                           \
+        bitmap_[i][j] = RGBColor{255, 255, 255};                          \
+      else                                                                \
+        bitmap_[i][j] = RGBColor{0, 0, 0};                                \
+    }                                                                     \
+  }                                                                       \
   delete[] is_foreground;
+
+void BMP::Erosion(std::vector<std::pair<int, int>> &structing_element) {
+  DILATION_OR_EROSION(true, !bitmap_[i + it.first][j + it.second].r);
+}
+
+void BMP::Dilation(std::vector<std::pair<int, int>> &structing_element) {
+  DILATION_OR_EROSION(false, bitmap_[i + it.first][j + it.second].r);
+}
+
+void BMP::Opening(std::vector<std::pair<int, int>> &structing_element) {
+  Erosion(structing_element);
+  Dilation(structing_element);
+}
+
+void BMP::Closing(std::vector<std::pair<int, int>> &structing_element) {
+  Dilation(structing_element);
+  Erosion(structing_element);
 }

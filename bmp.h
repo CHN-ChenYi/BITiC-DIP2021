@@ -2,8 +2,8 @@
 
 #include <cstdint>
 #include <fstream>
-#include <vector>
 #include <utility>
+#include <vector>
 
 struct BMPHeader {
   uint8_t type[2];
@@ -61,4 +61,10 @@ class BMP {
 
   void Erosion(std::vector<std::pair<int, int>>
                    &structing_element);  // must be binarized before calling
+  void Dilation(std::vector<std::pair<int, int>>
+                    &structing_element);  // must be binarized before calling
+  void Opening(std::vector<std::pair<int, int>>
+                    &structing_element);  // must be binarized before calling
+  void Closing(std::vector<std::pair<int, int>>
+                    &structing_element);  // must be binarized before calling
 };
