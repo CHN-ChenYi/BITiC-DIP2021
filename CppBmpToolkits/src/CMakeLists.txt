@@ -1,4 +1,7 @@
 set(CppBmpToolkits_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/bmp.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/bmp_io.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/yuv.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/binary.cpp
   PARENT_SCOPE
 )

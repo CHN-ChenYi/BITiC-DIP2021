@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.13.4)
 
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 message(STATUS "CMake build type: ${CMAKE_BUILD_TYPE}")
@@ -22,4 +22,8 @@ message(STATUS "Compiling ${USER_SOURCE} to executable ${OUTPUT_EXE}")
 
 add_executable(${OUTPUT_EXE} ${USER_SOURCE})
 
-target_link_libraries(${OUTPUT_EXE} CppBmpToolkits)
+if (WIN32)
+  target_link_libraries(${OUTPUT_EXE} CppBmpToolkits)
+else ()
+  target_link_libraries(${OUTPUT_EXE} CppBmpToolkits m)
+endif()

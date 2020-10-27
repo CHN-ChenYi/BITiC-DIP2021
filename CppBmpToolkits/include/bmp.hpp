@@ -4,6 +4,7 @@
 #include <fstream>
 #include <utility>
 #include <vector>
+#include <stdexcept>
 
 struct BMPHeader {
   uint8_t type[2];
