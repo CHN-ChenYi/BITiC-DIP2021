@@ -4,4 +4,4 @@ test
 *.o
 *.bmp
 *.exe
-build/
+build

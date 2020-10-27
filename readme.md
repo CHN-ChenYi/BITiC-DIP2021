@@ -1,4 +1,8 @@
-# Usage
+# BITiC
+
+**B**MP **I**mage **T**oolkit **i**n **C**++
+
+## Usage
 
 `demo.cpp` is an example of how to use it.
 

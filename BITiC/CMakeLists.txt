@@ -18,12 +18,12 @@ endif()
 
 add_subdirectory(src)
 if (WIN32)
-  add_library(CppBmpToolkits STATIC ${CppBmpToolkits_SRC})
+  add_library(BITiC STATIC ${BITiC_SRC})
 else ()
-  add_library(CppBmpToolkits SHARED ${CppBmpToolkits_SRC})
+  add_library(BITiC SHARED ${BITiC_SRC})
 endif()
 
-target_include_directories(CppBmpToolkits
+target_include_directories(BITiC
   PRIVATE src
   PUBLIC include
 )

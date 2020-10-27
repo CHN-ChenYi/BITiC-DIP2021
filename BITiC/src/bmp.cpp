@@ -1,6 +1,6 @@
-#include "bmp.hpp"
-
 #include <cstring>
+
+#include "BITiC.hpp"
 
 BMP::BMP() {
   memset(&bmp_header_, 0, sizeof(bmp_header_));

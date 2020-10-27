@@ -1,11 +1,35 @@
 #include <iostream>
 
-#include "bmp.hpp"
+#include "BITiC.hpp"
 using namespace std;
 
-int main() {
+void TestYUV() {
+  BMP image("YUV_input.bmp");
+
+  BMP image2(image);
+  image2.GrayScale();
+  image2.write("grayscale.bmp");
+
+  int x;
+  cout << "Please input the delta of luminance" << endl;
+  cin >> x;
+  // x = 50;
+  BMP image3(image);
+  image3.ModifyLuminanceLinear(x);
+  image3.write("luminance_linear.bmp");
+
+  double y;
+  cout << "Please input the exponent of luminance" << endl;
+  cin >> y;
+  // y = 2;
+  BMP image4(image);
+  image4.ModifyLuminanceExponential(y);
+  image4.write("luminance_exponential.bmp");
+}
+
+void TestBin() {
   BMP image;
-  image.read("input.bmp");
+  image.read("bin_input.bmp");
 
   BMP image2(image);
   image2.Binarization();
@@ -32,6 +56,10 @@ int main() {
 
   image5.Closing(structing_element);
   image5.write("closing.bmp");
+}
 
+int main() {
+  // TestYUV();
+  TestBin();
   return 0;
 }
