@@ -79,6 +79,7 @@ void BMP::read(const char filename[]) {
   }
 
   // read image data
+  uint8_t padding = (4 - dib_header_.width_abs * 3 % 4) % 4;
   file.seekg(bmp_header_.offbits);
   for (int i = 0; i < dib_header_.height_abs; i++)
     bitmap_.push_back(std::vector<RGBColor>(dib_header_.width_abs));
@@ -92,11 +93,13 @@ void BMP::read(const char filename[]) {
       file.read((char *)&bitmap_[i][j].g, sizeof(bitmap_[0][0].g));
       file.read((char *)&bitmap_[i][j].r, sizeof(bitmap_[0][0].r));
     }
-    file.seekg(dib_header_.width_abs * 3 % 4, std::ios_base::cur);
+    file.seekg(padding, std::ios_base::cur);
   }
 
   file.close();
 }
+
+#include <cassert>
 
 void BMP::write(const char filename[]) {
   std::ofstream file(filename, std::ios_base::binary);
@@ -124,14 +127,16 @@ void BMP::write(const char filename[]) {
   dib_header_.write(file);
 
   // write image data
+  uint8_t padding = (4 - dib_header_.width_abs * 3 % 4) % 4;
   file.seekp(bmp_header_.offbits);
   for (int i = 0; i < dib_header_.height_abs; i++) {
     for (int j = 0; j < dib_header_.width_abs; j++) {
+      assert(bitmap_[i][j].r==bitmap_[i][j].b && bitmap_[i][j].g==bitmap_[i][j].b);
       file.write((char *)&bitmap_[i][j].b, sizeof(bitmap_[0][0].b));
       file.write((char *)&bitmap_[i][j].g, sizeof(bitmap_[0][0].g));
       file.write((char *)&bitmap_[i][j].r, sizeof(bitmap_[0][0].r));
     }
-    file.seekp(dib_header_.width_abs * 3 % 4, std::ios_base::cur);
+    file.seekp(padding, std::ios_base::cur);
   }
 
   file.close();
