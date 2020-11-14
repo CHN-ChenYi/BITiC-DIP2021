@@ -53,8 +53,15 @@ class BMP {
   void SetHeight(const int32_t height);
 
   void GrayScale();
-  void ModifyLuminanceLinear(const int delta);
-  void ModifyLuminanceExponential(const double ratio);  // > 1 for darker
+
+  /*
+  trans_func example:
+  * auto linear_transform = [](const int &y) { return y + delta; };
+  * auto exponential_transform = [](const int &y) {
+  *   return int(exp(log(y / 255.0) * ratio) * 255); // ratio > 1 for darker
+  * };
+  */
+  void ModifyLuminance(int (*trans_func)(const int &y));
 
   void Binarization();  // global version
   void Binarization(const unsigned window_side_length,

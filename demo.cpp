@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 
 #include "BITiC.hpp"
@@ -10,20 +11,24 @@ void TestYUV() {
   image2.GrayScale();
   image2.write("grayscale.bmp");
 
-  int x;
+  static int delta;
+  static auto linear_transform = [](const int &y) { return y + delta; };
   cout << "Please input the delta of luminance" << endl;
-  cin >> x;
-  // x = 50;
+  cin >> delta;
+  // delta = 50;
   BMP image3(image);
-  image3.ModifyLuminanceLinear(x);
+  image3.ModifyLuminance(linear_transform);
   image3.write("luminance_linear.bmp");
 
-  double y;
+  static double ratio;
+  static auto exponential_transform = [](const int &y) {
+    return int(exp(log(y / 255.0) * ratio) * 255);  // ratio > 1 for darker
+  };
   cout << "Please input the exponent of luminance" << endl;
-  cin >> y;
-  // y = 2;
+  cin >> ratio;
+  // ratio = 2;
   BMP image4(image);
-  image4.ModifyLuminanceExponential(y);
+  image4.ModifyLuminance(exponential_transform);
   image4.write("luminance_exponential.bmp");
 }
 
@@ -60,6 +65,6 @@ void TestBin() {
 
 int main() {
   // TestYUV();
-  TestBin();
+  // TestBin();
   return 0;
 }
