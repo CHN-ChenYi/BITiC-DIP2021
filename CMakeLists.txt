@@ -8,7 +8,7 @@ project(BITiC)
 set(USER_SOURCE "demo.cpp" CACHE STRING "Source to build with BITiC library")
 set(OUTPUT_EXE "demo" CACHE STRING "Executable to compile to")
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 

@@ -3,61 +3,45 @@
 void BMPHeader::read(std::ifstream &file, std::streampos offset,
                      std::ios_base::seekdir dir) {
   file.seekg(offset, dir);
+  uint8_t type[2];
   file.read((char *)&type, sizeof(type[0]) * 2);
   if (type[0] != 0x42 || type[1] != 0x4D)
     throw std::runtime_error("Unsupported ID field, possibly not a bmp file.");
-  file.read((char *)&size, sizeof(size));
-  file.read((char *)&reserved, sizeof(reserved));
-  file.read((char *)&offbits, sizeof(offbits));
+  file.read((char *)this, sizeof(BMPHeader));
 }
 
 void BMPHeader::write(std::ofstream &file) const {
+  const uint8_t type[2] = {0x42, 0x4D};
   file.write((char *)&type, sizeof(type[0]) * 2);
-  file.write((char *)&size, sizeof(size));
-  file.write((char *)&reserved, sizeof(reserved));
-  file.write((char *)&offbits, sizeof(offbits));
+  file.write((char *)this, sizeof(BMPHeader));
 }
 
 void DIBHeader::read(std::ifstream &file, std::streampos offset,
                      std::ios_base::seekdir dir) {
   file.seekg(offset, dir);
+  uint32_t size;
   file.read((char *)&size, sizeof(size));
   if (size != 40)
     throw std::runtime_error(
         "Unsupported DIB header, only support BITMAPINFOHEADER.");
-  file.read((char *)&width, sizeof(width));
-  width_abs = width < 0 ? -width : width;
-  file.read((char *)&height, sizeof(height));
+  file.read((char *)&width, size - sizeof(size));
+  if (width < 0)
+    throw std::runtime_error("Width in DIB header can't be negative.");
+  width_abs = width;
   height_abs = height < 0 ? -height : height;
-  file.read((char *)&planes, sizeof(planes));
   if (planes != 1)
     throw std::runtime_error(
         "The number of color planes isn't 1, the image might be broken.");
-  file.read((char *)&bit_count, sizeof(bit_count));
   if (bit_count != 24) throw std::runtime_error("Unsupported color depth.");
-  file.read((char *)&compression, sizeof(compression));
   if (compression != 0)
     throw std::runtime_error(
         "Unsupported compression method, only support BI_RGB.");
-  file.read((char *)&size_image, sizeof(size_image));
-  file.read((char *)&x_pels_per_meter, sizeof(x_pels_per_meter));
-  file.read((char *)&y_pels_per_meter, sizeof(y_pels_per_meter));
-  file.read((char *)&clr_used, sizeof(clr_used));
-  file.read((char *)&clr_important, sizeof(clr_important));
 }
 
 void DIBHeader::write(std::ofstream &file) const {
+  const uint32_t size = 40;
   file.write((char *)&size, sizeof(size));
-  file.write((char *)&width, sizeof(width));
-  file.write((char *)&height, sizeof(height));
-  file.write((char *)&planes, sizeof(planes));
-  file.write((char *)&bit_count, sizeof(bit_count));
-  file.write((char *)&compression, sizeof(compression));
-  file.write((char *)&size_image, sizeof(size_image));
-  file.write((char *)&x_pels_per_meter, sizeof(x_pels_per_meter));
-  file.write((char *)&y_pels_per_meter, sizeof(y_pels_per_meter));
-  file.write((char *)&clr_used, sizeof(clr_used));
-  file.write((char *)&clr_important, sizeof(clr_important));
+  file.write((char *)&width, size - sizeof(size));
 }
 
 void BMP::read(const char filename[]) {
@@ -79,34 +63,23 @@ void BMP::read(const char filename[]) {
   }
 
   // read image data
-  uint8_t padding = (4 - dib_header_.width_abs * 3 % 4) % 4;
   file.seekg(bmp_header_.offbits);
+  bitmap_.resize(dib_header_.height_abs);
   for (int i = 0; i < dib_header_.height_abs; i++)
-    bitmap_.push_back(std::vector<RGBColor>(dib_header_.width_abs));
+    bitmap_[i].resize(dib_header_.width_abs);
+  size_t line_size = dib_header_.width_abs * dib_header_.bit_count / 8;
+  line_size += (4 - line_size % 4) % 4;
   for (int i = dib_header_.height >= 0 ? 0 : dib_header_.height_abs - 1;
        i >= 0 && i < dib_header_.height_abs;
-       dib_header_.height >= 0 ? i++ : i--) {
-    for (int j = dib_header_.width >= 0 ? 0 : dib_header_.width_abs - 1;
-         j >= 0 && j < dib_header_.width_abs;
-         dib_header_.width >= 0 ? j++ : j--) {
-      file.read((char *)&bitmap_[i][j].b, sizeof(bitmap_[0][0].b));
-      file.read((char *)&bitmap_[i][j].g, sizeof(bitmap_[0][0].g));
-      file.read((char *)&bitmap_[i][j].r, sizeof(bitmap_[0][0].r));
-    }
-    file.seekg(padding, std::ios_base::cur);
-  }
-
+       dib_header_.height >= 0 ? i++ : i--)
+    file.read((char *)bitmap_[i].data(), line_size);
   file.close();
 }
-
-#include <cassert>
 
 void BMP::write(const char filename[]) {
   std::ofstream file(filename, std::ios_base::binary);
   if (!file) throw std::runtime_error("Cannot open the image file.");
 
-  bmp_header_.type[0] = 0x42;
-  bmp_header_.type[1] = 0x4D;
   dib_header_.bit_count = 24;
   dib_header_.size_image = dib_header_.bit_count / 8 * dib_header_.height_abs *
                            (dib_header_.width_abs % 4 + dib_header_.width_abs);
@@ -115,7 +88,6 @@ void BMP::write(const char filename[]) {
   bmp_header_.offbits = 54;
   bmp_header_.write(file);
 
-  dib_header_.size = 40;
   dib_header_.width = dib_header_.width_abs;
   dib_header_.height = dib_header_.height_abs;
   dib_header_.planes = 1;
@@ -127,17 +99,16 @@ void BMP::write(const char filename[]) {
   dib_header_.write(file);
 
   // write image data
-  uint8_t padding = (4 - dib_header_.width_abs * 3 % 4) % 4;
+  const size_t line_size = dib_header_.width_abs * dib_header_.bit_count / 8;
+  const size_t padding_size = (4 - line_size % 4) % 4;
+  uint8_t *padding = new uint8_t[padding_size];
+  memset(padding, 0, padding_size);
   file.seekp(bmp_header_.offbits);
   for (int i = 0; i < dib_header_.height_abs; i++) {
-    for (int j = 0; j < dib_header_.width_abs; j++) {
-      assert(bitmap_[i][j].r==bitmap_[i][j].b && bitmap_[i][j].g==bitmap_[i][j].b);
-      file.write((char *)&bitmap_[i][j].b, sizeof(bitmap_[0][0].b));
-      file.write((char *)&bitmap_[i][j].g, sizeof(bitmap_[0][0].g));
-      file.write((char *)&bitmap_[i][j].r, sizeof(bitmap_[0][0].r));
-    }
-    file.seekp(padding, std::ios_base::cur);
+    file.write((char *)bitmap_[i].data(), line_size);
+    file.write((char *)padding, padding_size);
   }
+  delete padding;
 
   file.close();
 }
