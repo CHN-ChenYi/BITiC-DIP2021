@@ -2,12 +2,11 @@
 
 #include <cstdint>
 #include <fstream>
+#include <stdexcept>
 #include <utility>
 #include <vector>
-#include <stdexcept>
 
 struct BMPHeader {
-  uint8_t type[2];
   uint32_t size, reserved, offbits;
   void read(std::ifstream &file, std::streampos offset = 0,
             std::ios_base::seekdir dir = std::ios_base::cur);
@@ -15,19 +14,19 @@ struct BMPHeader {
 };
 
 struct DIBHeader {
-  uint32_t size;
-  int32_t width, height, width_abs, height_abs;
+  int32_t width, height;
   uint16_t planes, bit_count;
   uint32_t compression, size_image;
   int32_t x_pels_per_meter, y_pels_per_meter;  // in ppm
   uint32_t clr_used, clr_important;
+  int32_t width_abs, height_abs;
   void read(std::ifstream &file, std::streampos offset = 0,
             std::ios_base::seekdir dir = std::ios_base::cur);
   void write(std::ofstream &file) const;
 };
 
 struct RGBColor {
-  uint8_t r, g, b;
+  uint8_t b, g, r;  // in the storage order of BMP file
 };
 
 // bottom-left is the origin
@@ -54,8 +53,15 @@ class BMP {
   void SetHeight(const int32_t height);
 
   void GrayScale();
-  void ModifyLuminanceLinear(const int delta);
-  void ModifyLuminanceExponential(const double ratio);  // > 1 for darker
+
+  /*
+  trans_func example:
+  * auto linear_transform = [](const int &y) { return y + delta; };
+  * auto exponential_transform = [](const int &y) {
+  *   return int(exp(log(y / 255.0) * ratio) * 255); // ratio > 1 for darker
+  * };
+  */
+  void ModifyLuminance(int (*trans_func)(const int &y));
 
   void Binarization();  // global version
   void Binarization(const unsigned window_side_length,
@@ -66,7 +72,7 @@ class BMP {
   void Dilation(std::vector<std::pair<int, int>>
                     &structing_element);  // must be binarized before calling
   void Opening(std::vector<std::pair<int, int>>
-                    &structing_element);  // must be binarized before calling
+                   &structing_element);  // must be binarized before calling
   void Closing(std::vector<std::pair<int, int>>
-                    &structing_element);  // must be binarized before calling
+                   &structing_element);  // must be binarized before calling
 };
