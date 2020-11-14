@@ -1,4 +1,5 @@
 #include "BITiC.hpp"
+using namespace BITiC;
 
 void BMPHeader::read(std::ifstream &file, std::streampos offset,
                      std::ios_base::seekdir dir) {

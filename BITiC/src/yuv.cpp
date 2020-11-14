@@ -1,6 +1,7 @@
 #include <algorithm>
 
 #include "BITiC.hpp"
+using namespace BITiC;
 
 template <typename T>
 T Clamp(double x) {

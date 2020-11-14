@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+namespace BITiC {
+
 struct BMPHeader {
   uint32_t size, reserved, offbits;
   void read(std::ifstream &file, std::streampos offset = 0,
@@ -27,6 +29,14 @@ struct DIBHeader {
 
 struct RGBColor {
   uint8_t b, g, r;  // in the storage order of BMP file
+};
+
+// Other channels will overwrite the gray channel
+enum Channel {
+  kGrayChannel,
+  kRedChannel = 1,
+  kGreenChannel = 2,
+  kBlueChannel = 4
 };
 
 // bottom-left is the origin
@@ -62,6 +72,8 @@ class BMP {
   * };
   */
   void ModifyLuminance(int (*trans_func)(const int &y));
+  void LogarithmicEnhancement();
+  void HistogramEqualization(Channel channel);
 
   void Binarization();  // global version
   void Binarization(const unsigned window_side_length,
@@ -76,3 +88,5 @@ class BMP {
   void Closing(std::vector<std::pair<int, int>>
                    &structing_element);  // must be binarized before calling
 };
+
+}  // namespace BITiC

@@ -8,9 +8,10 @@ project(BITiC)
 set(USER_SOURCE "demo.cpp" CACHE STRING "Source to build with BITiC library")
 set(OUTPUT_EXE "demo" CACHE STRING "Executable to compile to")
 
-set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_STANDARD 17)
+
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -w")
 
 set(BITiC_DIR "BITiC" CACHE STRING
     "Name of the directory containing the BITiC library sources. It must be located in the same directory as the root CMakeLists.txt")

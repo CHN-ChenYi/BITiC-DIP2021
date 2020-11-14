@@ -3,6 +3,7 @@
 
 #include "BITiC.hpp"
 using namespace std;
+using namespace BITiC;
 
 void TestYUV() {
   BMP image("YUV_input.bmp");
