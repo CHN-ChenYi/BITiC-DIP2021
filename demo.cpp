@@ -64,8 +64,23 @@ void TestBin() {
   image5.write("closing.bmp");
 }
 
+void TestHis() {
+  BMP image("his_input.bmp"), image2(image), image3(image);
+  image.HistogramEqualization(Channel::kBlueChannel | Channel::kGreenChannel | Channel::kRedChannel);
+  image.write("equalization.bmp");
+
+  image2.HistogramEqualization(Channel::kGrayChannel);
+  image2.write("equalization_gray.bmp");
+  image2.GrayScale();
+  image2.write("equalization_gray_.bmp");
+
+  image3.LogarithmicEnhancement();
+  image3.write("logarithmic_enhance.bmp");
+}
+
 int main() {
   // TestYUV();
   // TestBin();
+  TestHis();
   return 0;
 }

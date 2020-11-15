@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bitset>
 #include <cstdint>
 #include <fstream>
 #include <stdexcept>
@@ -32,12 +33,10 @@ struct RGBColor {
 };
 
 // Other channels will overwrite the gray channel
-enum Channel {
-  kGrayChannel,
-  kRedChannel = 1,
-  kGreenChannel = 2,
-  kBlueChannel = 4
-};
+namespace Channel {
+static const std::bitset<3> kGrayChannel = 0, kRedChannel = 1,
+                            kGreenChannel = 2, kBlueChannel = 4;
+}  // namespace Channel
 
 // bottom-left is the origin
 class BMP {
@@ -72,8 +71,14 @@ class BMP {
   * };
   */
   void ModifyLuminance(int (*trans_func)(const int &y));
-  void LogarithmicEnhancement();
-  void HistogramEqualization(Channel channel);
+
+  // dst_histogram_cumulative_distribution_func: [0, 1] -> [0, 1]
+  void HistogramFitting(
+      decltype(Channel::kGrayChannel) channel,
+      double (*dst_histogram_cumulative_distribution_func_T)(const double &));
+  void LogarithmicEnhancement();  // TODO: test
+  void HistogramEqualization(
+      decltype(Channel::kGrayChannel) channel);  // TODO: test
 
   void Binarization();  // global version
   void Binarization(const unsigned window_side_length,

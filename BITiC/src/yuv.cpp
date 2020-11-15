@@ -1,19 +1,6 @@
-#include <algorithm>
-
 #include "BITiC.hpp"
+#include "lib.hpp"
 using namespace BITiC;
-
-template <typename T>
-T Clamp(double x) {
-  double ret = std::min<double>(std::numeric_limits<T>::max(), x);
-  return std::max<double>(std::numeric_limits<T>::min(), ret);
-}
-
-template <typename T>
-T Clamp(T x, T min, T max) {
-  T ret = std::min(max, x);
-  return std::max(min, ret);
-}
 
 void BMP::GrayScale() {
   for (int i = 0; i < dib_header_.height_abs; i++) {
