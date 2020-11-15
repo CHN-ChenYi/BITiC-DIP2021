@@ -110,8 +110,7 @@ void BMP::LogarithmicEnhancement() {
   HistTransform(
       y,
       [y_max](const decltype(bitmap_[0][0].r) &x) -> decltype(bitmap_[0][0].r) {
-        return log((double)(x + 1) / 256.0 + 1) /
-               log((double)(y_max + 1) / 256.0 + 1) * 256;
+        return log(x / 255.0 + 1) / log(y_max / 255.0 + 1) * 255;
       });
   for (auto i = 0; i < dib_header_.height_abs; i++) {
     for (auto j = 0; j < dib_header_.width_abs; j++) {
