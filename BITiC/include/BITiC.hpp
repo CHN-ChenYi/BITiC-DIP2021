@@ -1,10 +1,14 @@
 #pragma once
 
+#include <bitset>
 #include <cstdint>
 #include <fstream>
+#include <functional>
 #include <stdexcept>
 #include <utility>
 #include <vector>
+
+namespace BITiC {
 
 struct BMPHeader {
   uint32_t size, reserved, offbits;
@@ -28,6 +32,12 @@ struct DIBHeader {
 struct RGBColor {
   uint8_t b, g, r;  // in the storage order of BMP file
 };
+
+// Other channels will overwrite the gray channel
+namespace Channel {
+static const std::bitset<3> kGrayChannel = 0, kRedChannel = 1,
+                            kGreenChannel = 2, kBlueChannel = 4;
+}  // namespace Channel
 
 // bottom-left is the origin
 class BMP {
@@ -61,7 +71,20 @@ class BMP {
   *   return int(exp(log(y / 255.0) * ratio) * 255); // ratio > 1 for darker
   * };
   */
-  void ModifyLuminance(int (*trans_func)(const int &y));
+  void ModifyLuminance(std::function<int(const int &)> trans_func);
+
+  // trans_func: [0, 256) -> [0, 256)
+  void HistogramTransforming(decltype(Channel::kGrayChannel) channel,
+                             std::function<double(const double &)> trans_func);
+  // dst_histogram_cumulative_distribution_func: [0, 1] -> [0, 1]
+  void HistogramFitting(decltype(Channel::kGrayChannel) channel,
+                        std::function<double(const double &)>
+                            dst_histogram_cumulative_distribution_func_T);
+  void LogarithmicEnhancement();  // TODO: test
+  void LogarithmicEnhancement(const double &a, const double &b,
+                              const double &c);  // TODO: test
+  void HistogramEqualization(
+      decltype(Channel::kGrayChannel) channel);  // TODO: test
 
   void Binarization();  // global version
   void Binarization(const unsigned window_side_length,
@@ -76,3 +99,5 @@ class BMP {
   void Closing(std::vector<std::pair<int, int>>
                    &structing_element);  // must be binarized before calling
 };
+
+}  // namespace BITiC

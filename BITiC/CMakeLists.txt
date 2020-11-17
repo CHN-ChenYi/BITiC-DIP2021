@@ -1,6 +1,8 @@
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -w -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall")
 
 if (VERBOSE_CMAKE)
   message("-- Compiler flags:")

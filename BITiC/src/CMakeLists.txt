@@ -3,5 +3,6 @@ set(BITiC_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/bmp_io.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/yuv.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/binary.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/histogram.cpp
   PARENT_SCOPE
 )
