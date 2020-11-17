@@ -12,24 +12,22 @@ void TestYUV() {
   image2.GrayScale();
   image2.write("grayscale.bmp");
 
-  static int delta;
-  static auto linear_transform = [](const int &y) { return y + delta; };
+  int delta;
   cout << "Please input the delta of luminance" << endl;
   cin >> delta;
   // delta = 50;
   BMP image3(image);
-  image3.ModifyLuminance(linear_transform);
+  image3.ModifyLuminance([delta](const int &y) { return y + delta; });
   image3.write("luminance_linear.bmp");
 
-  static double ratio;
-  static auto exponential_transform = [](const int &y) {
-    return int(exp(log(y / 255.0) * ratio) * 255);  // ratio > 1 for darker
-  };
+  double ratio;
   cout << "Please input the exponent of luminance" << endl;
   cin >> ratio;
   // ratio = 2;
   BMP image4(image);
-  image4.ModifyLuminance(exponential_transform);
+  image4.ModifyLuminance([ratio](const int &y) {
+    return int(exp(log(y / 255.0) * ratio) * 255);  // ratio > 1 for darker
+  });
   image4.write("luminance_exponential.bmp");
 }
 
@@ -66,13 +64,14 @@ void TestBin() {
 
 void TestHis() {
   BMP image("his_input.bmp"), image2(image), image3(image);
-  image.HistogramEqualization(Channel::kBlueChannel | Channel::kGreenChannel | Channel::kRedChannel);
+  image.HistogramEqualization(Channel::kBlueChannel | Channel::kGreenChannel |
+                              Channel::kRedChannel);
   image.write("equalization.bmp");
 
   image2.HistogramEqualization(Channel::kGrayChannel);
-  image2.write("equalization_gray.bmp");
+  // image2.write("equalization_gray_.bmp");
   image2.GrayScale();
-  image2.write("equalization_gray_.bmp");
+  image2.write("equalization_gray.bmp");
 
   image3.LogarithmicEnhancement();
   image3.write("logarithmic_enhance.bmp");

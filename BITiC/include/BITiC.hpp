@@ -3,6 +3,7 @@
 #include <bitset>
 #include <cstdint>
 #include <fstream>
+#include <functional>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -70,13 +71,18 @@ class BMP {
   *   return int(exp(log(y / 255.0) * ratio) * 255); // ratio > 1 for darker
   * };
   */
-  void ModifyLuminance(int (*trans_func)(const int &y));
+  void ModifyLuminance(std::function<int(const int &)> trans_func);
 
+  // trans_func: [0, 256) -> [0, 256)
+  void HistogramTransforming(decltype(Channel::kGrayChannel) channel,
+                             std::function<double(const double &)> trans_func);
   // dst_histogram_cumulative_distribution_func: [0, 1] -> [0, 1]
-  void HistogramFitting(
-      decltype(Channel::kGrayChannel) channel,
-      double (*dst_histogram_cumulative_distribution_func_T)(const double &));
+  void HistogramFitting(decltype(Channel::kGrayChannel) channel,
+                        std::function<double(const double &)>
+                            dst_histogram_cumulative_distribution_func_T);
   void LogarithmicEnhancement();  // TODO: test
+  void LogarithmicEnhancement(const double &a, const double &b,
+                              const double &c);  // TODO: test
   void HistogramEqualization(
       decltype(Channel::kGrayChannel) channel);  // TODO: test
 

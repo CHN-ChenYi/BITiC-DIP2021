@@ -13,7 +13,7 @@ void BMP::GrayScale() {
   }
 }
 
-void BMP::ModifyLuminance(int (*trans_func)(const int &y)) {
+void BMP::ModifyLuminance(std::function<int(const int &)> trans_func) {
   for (int i = 0; i < dib_header_.height_abs; i++) {
     for (int j = 0; j < dib_header_.width_abs; j++) {
       // BT.601 SD TV standard

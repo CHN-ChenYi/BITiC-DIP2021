@@ -6,9 +6,57 @@
 using namespace BITiC;
 using namespace BITiC::Channel;
 
-template <typename T, typename T_2>
-inline void HistTransform(std::vector<T> &histogram, T_2 trans_func) {
-  for (auto &it : histogram) it = trans_func(it);
+#define RGBChannelTransforming(x)                    \
+  for (int i = 0; i < dib_header_.height_abs; i++) { \
+    for (int j = 0; j < dib_header_.width_abs; j++)  \
+      bitmap_[i][j].x = trans_func(bitmap_[i][j].x); \
+  }
+
+void BMP::HistogramTransforming(
+    decltype(Channel::kGrayChannel) channel,
+    std::function<double(const double &)> trans_func) {
+  if (channel.none()) {
+    std::vector<decltype(bitmap_[0][0].r)> y, u, v;
+    for (int i = 0; i < dib_header_.height_abs; i++) {
+      for (int j = 0; j < dib_header_.width_abs; j++) {
+        y.push_back(((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
+                      bitmap_[i][j].b * 25) >>
+                     8) +
+                    16);
+        u.push_back(((bitmap_[i][j].r * -38 + bitmap_[i][j].g * -74 +
+                      bitmap_[i][j].b * 112) >>
+                     8) +
+                    128);
+        v.push_back(((bitmap_[i][j].r * 112 + bitmap_[i][j].g * -94 +
+                      bitmap_[i][j].b * -18) >>
+                     8) +
+                    128);
+      }
+    }
+    for (auto &it : y) it = trans_func(it);
+    for (auto i = 0; i < dib_header_.height_abs; i++) {
+      for (auto j = 0; j < dib_header_.width_abs; j++) {
+        const size_t index = i * dib_header_.width_abs + j;
+        const int c = y[index] - 16;
+        const int d = u[index] - 128;
+        const int e = v[index] - 128;
+        bitmap_[i][j].r = Clamp((c * 298 + e * 409 + 128) >> 8, 0, 255);
+        bitmap_[i][j].g =
+            Clamp((c * 298 - d * 100 - e * 208 + 128) >> 8, 0, 255);
+        bitmap_[i][j].b = Clamp((c * 298 + d * 516 + 128) >> 8, 0, 255);
+      }
+    }
+  } else {
+    if ((channel & kRedChannel).any()) {
+      RGBChannelTransforming(r);
+    }
+    if ((channel & kGreenChannel).any()) {
+      RGBChannelTransforming(g);
+    }
+    if ((channel & kBlueChannel).any()) {
+      RGBChannelTransforming(b);
+    }
+  }
 }
 
 template <typename T, typename T_2>
@@ -43,7 +91,7 @@ inline void CurveFitting(std::vector<T> &curve, const T &min_val,
   }
 
 void BMP::HistogramFitting(decltype(kGrayChannel) channel,
-                           double (*dst_curve_T)(const double &)) {
+                           std::function<double(const double &)> dst_curve_T) {
   if (channel.none()) {  // grey channel
     std::vector<decltype(bitmap_[0][0].r)> y, u, v;
     for (int i = 0; i < dib_header_.height_abs; i++) {
@@ -89,40 +137,24 @@ void BMP::HistogramFitting(decltype(kGrayChannel) channel,
 }
 
 void BMP::LogarithmicEnhancement() {
-  std::vector<decltype(bitmap_[0][0].r)> y, u, v;
-  for (int i = 0; i < dib_header_.height_abs; i++) {
-    for (int j = 0; j < dib_header_.width_abs; j++) {
-      y.push_back(((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
-                    bitmap_[i][j].b * 25) >>
-                   8) +
-                  16);
-      u.push_back(((bitmap_[i][j].r * -38 + bitmap_[i][j].g * -74 +
-                    bitmap_[i][j].b * 112) >>
-                   8) +
-                  128);
-      v.push_back(((bitmap_[i][j].r * 112 + bitmap_[i][j].g * -94 +
-                    bitmap_[i][j].b * -18) >>
-                   8) +
-                  128);
-    }
-  }
-  const auto y_max = *std::max_element(y.begin(), y.end());
-  HistTransform(
-      y,
-      [y_max](const decltype(bitmap_[0][0].r) &x) -> decltype(bitmap_[0][0].r) {
-        return log(x / 255.0 + 1) / log(y_max / 255.0 + 1) * 255;
-      });
+  int y_max = 0;
   for (auto i = 0; i < dib_header_.height_abs; i++) {
-    for (auto j = 0; j < dib_header_.width_abs; j++) {
-      const size_t index = i * dib_header_.width_abs + j;
-      const int c = y[index] - 16;
-      const int d = u[index] - 128;
-      const int e = v[index] - 128;
-      bitmap_[i][j].r = Clamp((c * 298 + e * 409 + 128) >> 8, 0, 255);
-      bitmap_[i][j].g = Clamp((c * 298 - d * 100 - e * 208 + 128) >> 8, 0, 255);
-      bitmap_[i][j].b = Clamp((c * 298 + d * 516 + 128) >> 8, 0, 255);
-    }
+    for (auto j = 0; j < dib_header_.width_abs; j++)
+      y_max = std::max(y_max, ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
+                                bitmap_[i][j].b * 25) >>
+                               8) +
+                                  16);
   }
+  HistogramTransforming(Channel::kGrayChannel, [y_max](const double &x) {
+    return log(x / 255.0 + 1) / log(y_max / 255.0 + 1) * 255;
+  });
+}
+
+void BMP::LogarithmicEnhancement(const double &a, const double &b,
+                                 const double &c) {
+  HistogramTransforming(Channel::kGrayChannel, [a, b, c](const double &x) {
+    return Clamp<double>(a + log(x + 1) / b / log(c), 0, 255);
+  });
 }
 
 void BMP::HistogramEqualization(decltype(kGrayChannel) channel) {
