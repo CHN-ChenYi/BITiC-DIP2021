@@ -38,43 +38,41 @@ void BMP::HistogramTransforming(
 template <typename T, typename T_2>
 inline void CurveFitting(std::vector<T> &curve, const T &min_val,
                          const T &max_val, const double &bias,
-                         T_2 dst_curve_T) {
-  // const T max_val = *std::max_element(curve.begin(), curve.end()),
-  //         min_val = *std::min_element(curve.begin(), curve.end());
-  const double step_length = (max_val - min_val) / 255.0;
+                         const int &sample_size, T_2 dst_curve_T) {
+  const double step_length = (max_val - min_val) / sample_size;
   std::vector<double> count;
-  count.resize(256);
-  for (short i = 0; i < 256; i++) count[i] = 0;
+  count.resize(sample_size);
+  for (short i = 0; i < sample_size; i++) count[i] = 0;
   for (auto &it : curve) count[(it - min_val) / step_length + 0.5]++;
   for (auto &it : count) it /= curve.size();
-  for (int i = 1; i < 256; i++) count[i] += count[i - 1];
+  for (int i = 1; i < sample_size; i++) count[i] += count[i - 1];
   for (auto &it : curve)
-    it = dst_curve_T(count[(it - min_val) / step_length + 0.5]) *
-             (max_val - min_val) +
+    it = dst_curve_T(count[(it - min_val) / step_length + 0.5]) * max_val +
          min_val + bias;
 }
 
-#define RGBChannelFitting(x)                                       \
-  std::vector<decltype(bitmap_[0][0].x)> curve;                    \
-  for (int i = 0; i < dib_header_.height_abs; i++) {               \
-    for (int j = 0; j < dib_header_.width_abs; j++)                \
-      curve.push_back(bitmap_[i][j].x);                            \
-  }                                                                \
-  CurveFitting(curve, uint8_t(0), uint8_t(255), 0.5, dst_curve_T); \
-  for (int i = 0; i < dib_header_.height_abs; i++) {               \
-    for (int j = 0; j < dib_header_.width_abs; j++)                \
-      bitmap_[i][j].x = curve[i * dib_header_.width_abs + j];      \
+#define RGBChannelFitting(x)                                            \
+  std::vector<decltype(bitmap_[0][0].x)> curve;                         \
+  for (int i = 0; i < dib_header_.height_abs; i++) {                    \
+    for (int j = 0; j < dib_header_.width_abs; j++)                     \
+      curve.push_back(bitmap_[i][j].x);                                 \
+  }                                                                     \
+  CurveFitting(curve, uint8_t(0), uint8_t(255), 0.5, 255, dst_curve_T); \
+  for (int i = 0; i < dib_header_.height_abs; i++) {                    \
+    for (int j = 0; j < dib_header_.width_abs; j++)                     \
+      bitmap_[i][j].x = curve[i * dib_header_.width_abs + j];           \
   }
 
 void BMP::HistogramFitting(decltype(kGrayChannel) channel,
+                           const int &sample_size,
                            std::function<double(const double &)> dst_curve_T) {
   if (channel.none()) {  // grey channel
-    std::vector<decltype(bitmap_[0][0].r)> y, u, v;
+    std::vector<double> y;
     for (int i = 0; i < dib_header_.height_abs; i++) {
       for (int j = 0; j < dib_header_.width_abs; j++)
         y.push_back(bitmap_.YUV()[i][j].y);
     }
-    CurveFitting(y, uint8_t(0), uint8_t(255), 0.5, dst_curve_T);
+    CurveFitting(y, 0.0, 255.0, 0, sample_size, dst_curve_T);
     for (int i = 0; i < dib_header_.height_abs; i++) {
       for (int j = 0; j < dib_header_.width_abs; j++) {
         const size_t index = i * dib_header_.width_abs + j;
@@ -112,6 +110,7 @@ void BMP::LogarithmicEnhancement(const double &a, const double &b,
   });
 }
 
-void BMP::HistogramEqualization(decltype(kGrayChannel) channel) {
-  HistogramFitting(channel, [](const double &x) { return x; });
+void BMP::HistogramEqualization(decltype(kGrayChannel) channel,
+                                const int &sample_size) {
+  HistogramFitting(channel, sample_size, [](const double &x) { return x; });
 }

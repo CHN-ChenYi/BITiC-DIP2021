@@ -74,12 +74,16 @@ class BMP {
                              std::function<double(const double &)> trans_func);
   // dst_histogram_cumulative_distribution_func: [0, 1] -> [0, 1]
   void HistogramFitting(decltype(Channel::kGrayChannel) channel,
+                        const int &sample_size,
                         std::function<double(const double &)>
                             dst_histogram_cumulative_distribution_func_T);
   void LogarithmicEnhancement();
   void LogarithmicEnhancement(const double &a, const double &b,
                               const double &c);
-  void HistogramEqualization(decltype(Channel::kGrayChannel) channel);
+  void HistogramEqualization(
+      decltype(Channel::kGrayChannel) channel,
+      const int &sample_size =
+          255);  // sample_size only works for the gray channel
 
   void Binarization();  // global version
   void Binarization(const unsigned window_side_length,
