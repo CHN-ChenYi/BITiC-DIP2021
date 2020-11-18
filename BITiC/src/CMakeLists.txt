@@ -1,4 +1,5 @@
 set(BITiC_SRC
+  ${CMAKE_CURRENT_SOURCE_DIR}/color.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/bmp.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/bmp_io.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/yuv.cpp

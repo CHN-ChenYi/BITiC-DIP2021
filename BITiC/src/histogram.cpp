@@ -11,41 +11,17 @@ using namespace BITiC::Channel;
     for (int j = 0; j < dib_header_.width_abs; j++)  \
       bitmap_[i][j].x = trans_func(bitmap_[i][j].x); \
   }
-
+#include <cassert>
+#include <iostream>
 void BMP::HistogramTransforming(
     decltype(Channel::kGrayChannel) channel,
     std::function<double(const double &)> trans_func) {
   if (channel.none()) {
-    std::vector<decltype(bitmap_[0][0].r)> y, u, v;
     for (int i = 0; i < dib_header_.height_abs; i++) {
-      for (int j = 0; j < dib_header_.width_abs; j++) {
-        y.push_back(((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
-                      bitmap_[i][j].b * 25) >>
-                     8) +
-                    16);
-        u.push_back(((bitmap_[i][j].r * -38 + bitmap_[i][j].g * -74 +
-                      bitmap_[i][j].b * 112) >>
-                     8) +
-                    128);
-        v.push_back(((bitmap_[i][j].r * 112 + bitmap_[i][j].g * -94 +
-                      bitmap_[i][j].b * -18) >>
-                     8) +
-                    128);
-      }
+      for (int j = 0; j < dib_header_.width_abs; j++)
+        bitmap_.YUV()[i][j].y = trans_func(bitmap_.YUV()[i][j].y);
     }
-    for (auto &it : y) it = trans_func(it);
-    for (auto i = 0; i < dib_header_.height_abs; i++) {
-      for (auto j = 0; j < dib_header_.width_abs; j++) {
-        const size_t index = i * dib_header_.width_abs + j;
-        const int c = y[index] - 16;
-        const int d = u[index] - 128;
-        const int e = v[index] - 128;
-        bitmap_[i][j].r = Clamp((c * 298 + e * 409 + 128) >> 8, 0, 255);
-        bitmap_[i][j].g =
-            Clamp((c * 298 - d * 100 - e * 208 + 128) >> 8, 0, 255);
-        bitmap_[i][j].b = Clamp((c * 298 + d * 516 + 128) >> 8, 0, 255);
-      }
-    }
+    bitmap_.ToRGB();
   } else {
     if ((channel & kRedChannel).any()) {
       RGBChannelTransforming(r);
@@ -68,7 +44,7 @@ inline void CurveFitting(std::vector<T> &curve, const T &min_val,
   const double step_length = (max_val - min_val) / 255.0;
   std::vector<double> count;
   count.resize(256);
-  for (auto i = 0; i < 256; i++) count[i] = 0;
+  for (short i = 0; i < 256; i++) count[i] = 0;
   for (auto &it : curve) count[(it - min_val) / step_length + 0.5]++;
   for (auto &it : count) it /= curve.size();
   for (int i = 1; i < 256; i++) count[i] += count[i - 1];
@@ -80,13 +56,13 @@ inline void CurveFitting(std::vector<T> &curve, const T &min_val,
 
 #define RGBChannelFitting(x)                                       \
   std::vector<decltype(bitmap_[0][0].x)> curve;                    \
-  for (auto i = 0; i < dib_header_.height_abs; i++) {              \
-    for (auto j = 0; j < dib_header_.width_abs; j++)               \
+  for (int i = 0; i < dib_header_.height_abs; i++) {               \
+    for (int j = 0; j < dib_header_.width_abs; j++)                \
       curve.push_back(bitmap_[i][j].x);                            \
   }                                                                \
   CurveFitting(curve, uint8_t(0), uint8_t(255), 0.5, dst_curve_T); \
-  for (auto i = 0; i < dib_header_.height_abs; i++) {              \
-    for (auto j = 0; j < dib_header_.width_abs; j++)               \
+  for (int i = 0; i < dib_header_.height_abs; i++) {               \
+    for (int j = 0; j < dib_header_.width_abs; j++)                \
       bitmap_[i][j].x = curve[i * dib_header_.width_abs + j];      \
   }
 
@@ -95,32 +71,14 @@ void BMP::HistogramFitting(decltype(kGrayChannel) channel,
   if (channel.none()) {  // grey channel
     std::vector<decltype(bitmap_[0][0].r)> y, u, v;
     for (int i = 0; i < dib_header_.height_abs; i++) {
-      for (int j = 0; j < dib_header_.width_abs; j++) {
-        y.push_back(((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
-                      bitmap_[i][j].b * 25) >>
-                     8) +
-                    16);
-        u.push_back(((bitmap_[i][j].r * -38 + bitmap_[i][j].g * -74 +
-                      bitmap_[i][j].b * 112) >>
-                     8) +
-                    128);
-        v.push_back(((bitmap_[i][j].r * 112 + bitmap_[i][j].g * -94 +
-                      bitmap_[i][j].b * -18) >>
-                     8) +
-                    128);
-      }
+      for (int j = 0; j < dib_header_.width_abs; j++)
+        y.push_back(bitmap_.YUV()[i][j].y);
     }
     CurveFitting(y, uint8_t(0), uint8_t(255), 0.5, dst_curve_T);
-    for (auto i = 0; i < dib_header_.height_abs; i++) {
-      for (auto j = 0; j < dib_header_.width_abs; j++) {
+    for (int i = 0; i < dib_header_.height_abs; i++) {
+      for (int j = 0; j < dib_header_.width_abs; j++) {
         const size_t index = i * dib_header_.width_abs + j;
-        const int c = y[index] - 16;
-        const int d = u[index] - 128;
-        const int e = v[index] - 128;
-        bitmap_[i][j].r = Clamp((c * 298 + e * 409 + 128) >> 8, 0, 255);
-        bitmap_[i][j].g =
-            Clamp((c * 298 - d * 100 - e * 208 + 128) >> 8, 0, 255);
-        bitmap_[i][j].b = Clamp((c * 298 + d * 516 + 128) >> 8, 0, 255);
+        bitmap_.YUV()[i][j].y = y[index];
       }
     }
   } else {
@@ -137,13 +95,10 @@ void BMP::HistogramFitting(decltype(kGrayChannel) channel,
 }
 
 void BMP::LogarithmicEnhancement() {
-  int y_max = 0;
-  for (auto i = 0; i < dib_header_.height_abs; i++) {
-    for (auto j = 0; j < dib_header_.width_abs; j++)
-      y_max = std::max(y_max, ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
-                                bitmap_[i][j].b * 25) >>
-                               8) +
-                                  16);
+  double y_max = 0;
+  for (int i = 0; i < dib_header_.height_abs; i++) {
+    for (int j = 0; j < dib_header_.width_abs; j++)
+      y_max = std::max(y_max, bitmap_.YUV()[i][j].y);
   }
   HistogramTransforming(Channel::kGrayChannel, [y_max](const double &x) {
     return log(x / 255.0 + 1) / log(y_max / 255.0 + 1) * 255;

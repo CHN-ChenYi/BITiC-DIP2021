@@ -6,8 +6,7 @@ using namespace BITiC;
 BMP::BMP() {
   memset(&bmp_header_, 0, sizeof(bmp_header_));
   memset(&dib_header_, 0, sizeof(dib_header_));
-  palette_.resize(0);
-  bitmap_.resize(0);
+  // palette_.resize(0);
 }
 
 BMP::BMP(const char filename[]) { read(filename); }
@@ -25,9 +24,6 @@ void BMP::SetWidth(const int32_t width) {
 
 void BMP::SetHeight(const int32_t height) {
   if (height < 0) return;
-  int32_t old_height = dib_header_.height_abs;
   dib_header_.height_abs = height;
-  bitmap_.resize(height);
-  for (int32_t i = old_height; i < height; i++)
-    bitmap_[i].resize(dib_header_.width_abs);
+  bitmap_.Resize(dib_header_.width_abs, height);
 }

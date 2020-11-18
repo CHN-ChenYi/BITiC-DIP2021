@@ -37,10 +37,7 @@ void BMP::Binarization() {
   for (int i = 0; i < dib_header_.height_abs; i++) {
     for (int j = 0; j < dib_header_.width_abs; j++) {
       const int index = i * dib_header_.width_abs + j;
-      y[index] = ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
-                   bitmap_[i][j].b * 25) >>
-                  8) +
-                 16;
+      y[index] = (uint8_t)bitmap_.YUV()[i][j].y;
       histogram[y[index]]++;
     }
   }
@@ -70,11 +67,7 @@ void BMP::Binarization(const unsigned window_side_length,
   // init y
   for (int i = 0; i < dib_header_.height_abs; i++) {
     for (int j = 0; j < dib_header_.width_abs; j++)
-      y[i * dib_header_.width_abs + j] =
-          ((bitmap_[i][j].r * 66 + bitmap_[i][j].g * 129 +
-            bitmap_[i][j].b * 25) >>
-           8) +
-          16;
+      y[i * dib_header_.width_abs + j] = (uint8_t)bitmap_.YUV()[i][j].y;
   }
   // sliding window
   for (int start_i = 0; start_i < dib_header_.height_abs;

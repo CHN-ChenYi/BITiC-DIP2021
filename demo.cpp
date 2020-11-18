@@ -14,18 +14,18 @@ void TestYUV() {
 
   int delta;
   cout << "Please input the delta of luminance" << endl;
-  cin >> delta;
-  // delta = 50;
+  // cin >> delta;
+  delta = 50;
   BMP image3(image);
-  image3.ModifyLuminance([delta](const int &y) { return y + delta; });
+  image3.ModifyLuminance([delta](const double &y) { return y + delta; });
   image3.write("luminance_linear.bmp");
 
   double ratio;
   cout << "Please input the exponent of luminance" << endl;
-  cin >> ratio;
-  // ratio = 2;
+  // cin >> ratio;
+  ratio = 2;
   BMP image4(image);
-  image4.ModifyLuminance([ratio](const int &y) {
+  image4.ModifyLuminance([ratio](const double &y) {
     return int(exp(log(y / 255.0) * ratio) * 255);  // ratio > 1 for darker
   });
   image4.write("luminance_exponential.bmp");
@@ -69,7 +69,7 @@ void TestHis() {
   image.write("equalization.bmp");
 
   image2.HistogramEqualization(Channel::kGrayChannel);
-  // image2.write("equalization_gray_.bmp");
+  image2.write("equalization_gray_.bmp");
   image2.GrayScale();
   image2.write("equalization_gray.bmp");
 
@@ -78,8 +78,8 @@ void TestHis() {
 }
 
 int main() {
-  // TestYUV();
-  // TestBin();
+  TestYUV();
+  TestBin();
   TestHis();
   return 0;
 }

@@ -37,6 +37,7 @@ void DIBHeader::read(std::ifstream &file, std::streampos offset,
   if (compression != 0)
     throw std::runtime_error(
         "Unsupported compression method, only support BI_RGB.");
+  if (clr_used != 0) throw std::runtime_error("Palette is not supported.");
 }
 
 void DIBHeader::write(std::ofstream &file) const {
@@ -52,22 +53,9 @@ void BMP::read(const char filename[]) {
   bmp_header_.read(file);
   dib_header_.read(file);
 
-  // read palette
-  for (unsigned i = 0; i < dib_header_.clr_used; i++) {  // TODO: test palette
-    RGBColor rgb;
-    uint8_t rgb_reserved;
-    file.read((char *)&rgb.b, sizeof(rgb.b));
-    file.read((char *)&rgb.g, sizeof(rgb.g));
-    file.read((char *)&rgb.r, sizeof(rgb.r));
-    file.read((char *)&rgb_reserved, sizeof(rgb_reserved));
-    palette_.push_back(rgb);
-  }
-
   // read image data
   file.seekg(bmp_header_.offbits);
-  bitmap_.resize(dib_header_.height_abs);
-  for (int i = 0; i < dib_header_.height_abs; i++)
-    bitmap_[i].resize(dib_header_.width_abs);
+  bitmap_.Resize(dib_header_.width_abs, dib_header_.height_abs);
   size_t line_size = dib_header_.width_abs * dib_header_.bit_count / 8;
   line_size += (4 - line_size % 4) % 4;
   for (int i = dib_header_.height >= 0 ? 0 : dib_header_.height_abs - 1;
