@@ -21,7 +21,6 @@ void BMP::HistogramTransforming(
       for (int j = 0; j < dib_header_.width_abs; j++)
         bitmap_.YUV()[i][j].y = trans_func(bitmap_.YUV()[i][j].y);
     }
-    bitmap_.ToRGB();
   } else {
     if ((channel & kRedChannel).any()) {
       RGBChannelTransforming(r);
