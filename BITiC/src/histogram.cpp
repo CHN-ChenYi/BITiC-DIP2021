@@ -41,11 +41,11 @@ inline void CurveFitting(std::vector<T> &curve, const T &min_val,
                          const int &sample_size, T_2 dst_curve_T) {
   const double step_length = (max_val - min_val) / sample_size;
   std::vector<double> count;
-  count.resize(sample_size);
-  for (short i = 0; i < sample_size; i++) count[i] = 0;
+  count.resize(sample_size + 1);
+  for (short i = 0; i <= sample_size; i++) count[i] = 0;
   for (auto &it : curve) count[(it - min_val) / step_length + 0.5]++;
   for (auto &it : count) it /= curve.size();
-  for (int i = 1; i < sample_size; i++) count[i] += count[i - 1];
+  for (int i = 1; i <= sample_size; i++) count[i] += count[i - 1];
   for (auto &it : curve)
     it = dst_curve_T(count[(it - min_val) / step_length + 0.5]) * max_val +
          min_val + bias;
