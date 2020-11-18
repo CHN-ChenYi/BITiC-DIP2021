@@ -17,7 +17,7 @@ void TestYUV() {
   cin >> delta;
   // delta = 50;
   BMP image3(image);
-  image3.ModifyLuminance([delta](const int &y) { return y + delta; });
+  image3.ModifyLuminance([delta](const double &y) { return y + delta; });
   image3.write("luminance_linear.bmp");
 
   double ratio;
@@ -25,7 +25,7 @@ void TestYUV() {
   cin >> ratio;
   // ratio = 2;
   BMP image4(image);
-  image4.ModifyLuminance([ratio](const int &y) {
+  image4.ModifyLuminance([ratio](const double &y) {
     return int(exp(log(y / 255.0) * ratio) * 255);  // ratio > 1 for darker
   });
   image4.write("luminance_exponential.bmp");
@@ -68,8 +68,8 @@ void TestHis() {
                               Channel::kRedChannel);
   image.write("equalization.bmp");
 
-  image2.HistogramEqualization(Channel::kGrayChannel);
-  // image2.write("equalization_gray_.bmp");
+  image2.HistogramEqualization(Channel::kGrayChannel, 256);
+  image2.write("equalization_gray_.bmp");
   image2.GrayScale();
   image2.write("equalization_gray.bmp");
 

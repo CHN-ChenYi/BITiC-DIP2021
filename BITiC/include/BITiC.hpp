@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "color.hpp"
 namespace BITiC {
 
 struct BMPHeader {
@@ -29,10 +30,6 @@ struct DIBHeader {
   void write(std::ofstream &file) const;
 };
 
-struct RGBColor {
-  uint8_t b, g, r;  // in the storage order of BMP file
-};
-
 // Other channels will overwrite the gray channel
 namespace Channel {
 static const std::bitset<3> kGrayChannel = 0, kRedChannel = 1,
@@ -43,16 +40,15 @@ static const std::bitset<3> kGrayChannel = 0, kRedChannel = 1,
 class BMP {
   BMPHeader bmp_header_;
   DIBHeader dib_header_;
-  std::vector<RGBColor> palette_;
-  std::vector<std::vector<RGBColor>> bitmap_;
+  // std::vector<RGBColor> palette_;
+  Bitmap bitmap_;
   uint8_t OtsuMethod(const unsigned histogram[256], const int pixel_count);
 
  public:
   BMP();
   BMP(const char filename[]);
   ~BMP();
-  operator std::vector<std::vector<RGBColor>>() { return bitmap_; }
-  std::vector<RGBColor> &operator[](int index) { return bitmap_[index]; }
+  operator Bitmap() { return bitmap_; }
 
   void read(const char *filename);
   void write(const char filename[]);
@@ -66,25 +62,28 @@ class BMP {
 
   /*
   trans_func example:
-  * auto linear_transform = [](const int &y) { return y + delta; };
-  * auto exponential_transform = [](const int &y) {
+  * auto linear_transform = [](const double &y) { return y + delta; };
+  * auto exponential_transform = [](const double &y) {
   *   return int(exp(log(y / 255.0) * ratio) * 255); // ratio > 1 for darker
   * };
   */
-  void ModifyLuminance(std::function<int(const int &)> trans_func);
+  void ModifyLuminance(std::function<double(const double &)> trans_func);
 
   // trans_func: [0, 256) -> [0, 256)
   void HistogramTransforming(decltype(Channel::kGrayChannel) channel,
                              std::function<double(const double &)> trans_func);
   // dst_histogram_cumulative_distribution_func: [0, 1] -> [0, 1]
   void HistogramFitting(decltype(Channel::kGrayChannel) channel,
+                        const int &sample_size,
                         std::function<double(const double &)>
                             dst_histogram_cumulative_distribution_func_T);
-  void LogarithmicEnhancement();  // TODO: test
+  void LogarithmicEnhancement();
   void LogarithmicEnhancement(const double &a, const double &b,
-                              const double &c);  // TODO: test
+                              const double &c);
   void HistogramEqualization(
-      decltype(Channel::kGrayChannel) channel);  // TODO: test
+      decltype(Channel::kGrayChannel) channel,
+      const int &sample_size =
+          255);  // sample_size only works for the gray channel
 
   void Binarization();  // global version
   void Binarization(const unsigned window_side_length,
