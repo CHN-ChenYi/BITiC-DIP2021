@@ -28,5 +28,4 @@ void BMP::ModifyLuminance(std::function<double(const double &)> trans_func) {
       assert(0 <= bitmap_.YUV()[i][j].y && bitmap_.YUV()[i][j].y <= 255);
     }
   }
-  bitmap_.ToRGB();
 }
