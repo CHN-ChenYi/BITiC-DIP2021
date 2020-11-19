@@ -78,9 +78,16 @@ void TestHis() {
   image3.write("logarithmic_enhance.bmp");
 }
 
+void TestGeo() {
+  BMP image("geo_input.bmp");
+  image.Translation(100, 100);
+  image.write("translation.bmp");
+}
+
 int main() {
   // TestYUV();
   // TestBin();
-  TestHis();
+  // TestHis();
+  TestGeo();
   return 0;
 }

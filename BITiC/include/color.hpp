@@ -20,6 +20,9 @@ class Bitmap {
   Bitmap() : flag(true) {}
   Bitmap(const Bitmap &other)
       : flag(other.flag), rgb_(other.rgb_), yuv_(other.yuv_) {}
+  Bitmap(const int &width, const int &height) : flag(true) {
+    Resize(width, height);
+  }
 
   operator std::vector<std::vector<RGBColor>> &() {
     if (!flag) ToRGB();
