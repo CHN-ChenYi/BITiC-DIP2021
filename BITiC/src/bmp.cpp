@@ -18,16 +18,16 @@ int32_t BMP::height() { return dib_header_.height_abs; }
 
 void BMP::SetWidth(const int32_t width) {
   dib_header_.width_abs = width;
-  bitmap_.Resize(width, dib_header_.height_abs);
+  bitmap_.Resize(dib_header_.height_abs, width);
 }
 
 void BMP::SetHeight(const int32_t height) {
   dib_header_.height_abs = height;
-  bitmap_.Resize(dib_header_.width_abs, height);
+  bitmap_.Resize(height, dib_header_.width_abs);
 }
 
-void BMP::Resize(const int32_t width, const int32_t height) {
-  dib_header_.width_abs = width;
+void BMP::Resize(const int32_t height, const int32_t width) {
   dib_header_.height_abs = height;
-  bitmap_.Resize(width, height);
+  dib_header_.width_abs = width;
+  bitmap_.Resize(height, width);
 }
