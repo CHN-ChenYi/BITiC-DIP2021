@@ -59,3 +59,32 @@ void BMP::Scale(const double &ratio_width, const double &ratio_height) {
   dib_header_.width_abs = new_width;
   dib_header_.height_abs = new_height;
 }
+
+#define UpdateMinMax(x, y)                                  \
+  x_min = std::min(x_min, x * cos(theta) - y * sin(theta)); \
+  x_max = std::max(x_max, x * cos(theta) - y * sin(theta)); \
+  y_min = std::min(y_min, x * sin(theta) + y * cos(theta)); \
+  y_max = std::max(y_max, x * sin(theta) + y * cos(theta));
+
+void BMP::Rotate(const double &theta) {
+  double x_min = 0, x_max = 0;
+  double y_min = 0, y_max = 0;
+  UpdateMinMax(dib_header_.width_abs, 0);
+  UpdateMinMax(0, dib_header_.height_abs);
+  UpdateMinMax(dib_header_.width_abs, dib_header_.height_abs);
+  const int new_width = int(x_max - x_min) + 1,
+            new_height = int(y_max - y_min) + 1;
+  Bitmap new_bitmap(new_width, new_height);
+  for (int i = 0; i < new_height; i++) {
+    for (int j = 0; j < new_width; j++) {
+      const int x_ = j + x_min;
+      const int y_ = i + y_min;
+      new_bitmap[i][j] =
+          bitmap_.BilinearInterpolate(x_ * sin(-theta) + y_ * cos(-theta),
+                                      x_ * cos(-theta) - y_ * sin(-theta));
+    }
+  }
+  bitmap_ = new_bitmap;
+  dib_header_.width_abs = new_width;
+  dib_header_.height_abs = new_height;
+}

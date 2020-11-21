@@ -72,7 +72,8 @@ void TestHis() {
 }
 
 void TestGeo() {
-  BMP image("geo_input.bmp"), image1(image), image2(image), image3(image);
+  BMP image("geo_input.bmp"), image1(image), image2(image), image3(image),
+      image4(image);
   image.Translation(100, 100);
   image.write("translation.bmp");
 
@@ -84,6 +85,9 @@ void TestGeo() {
 
   image3.Scale(0.75, 1.2);
   image3.write("scale.bmp");
+
+  image4.Rotate(acos(-1) / 3);
+  image4.write("rotate.bmp");
 }
 
 int main() {

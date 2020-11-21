@@ -104,6 +104,7 @@ class BMP {
   void Shear(const bool &horizontal_or_vertical,
              const double &d);  // 0 for horizontal, 1 for vertical
   void Scale(const double &ratio_width, const double &ratio_height);
+  void Rotate(const double &theta); // counter-clockwise, in rad
 };
 
 }  // namespace BITiC
