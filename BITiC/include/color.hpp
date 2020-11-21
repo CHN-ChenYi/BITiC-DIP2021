@@ -47,6 +47,20 @@ class Bitmap {
     return yuv_;
   }
 
+  int width() const {
+    if (flag)
+      return rgb_[0].size();
+    else
+      return yuv_[0].size();
+  }
+
+  int height() const {
+    if (flag)
+      return rgb_.size();
+    else
+      return yuv_.size();
+  }
+
   void Resize(const int width, const int height) {
     if (flag) {
       auto old_height = rgb_.size();

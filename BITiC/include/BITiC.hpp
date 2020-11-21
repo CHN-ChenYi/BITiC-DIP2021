@@ -101,6 +101,7 @@ class BMP {
 
   void Translation(const int &delta_width, const int &delta_height);
   void Mirror(const bool &horizontal, const bool &vertical);
+  void Shear(const bool &horizontal_or_vertical, const double &d);  // 0 for horizontal, 1 for vertical
 };
 
 }  // namespace BITiC
