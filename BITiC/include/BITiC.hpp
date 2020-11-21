@@ -57,7 +57,7 @@ class BMP {
   int32_t height();
   void SetWidth(const int32_t width);
   void SetHeight(const int32_t height);
-  void Resize(const int32_t width, const int32_t height);
+  void Resize(const int32_t height, const int32_t width);
 
   void GrayScale();
 
@@ -99,12 +99,12 @@ class BMP {
   void Closing(std::vector<std::pair<int, int>>
                    &structing_element);  // must be binarized before calling
 
-  void Translation(const int &delta_width, const int &delta_height);
+  void Translation(const int &delta_height, const int &delta_width);
   void Mirror(const bool &horizontal, const bool &vertical);
   void Shear(const bool &horizontal_or_vertical,
              const double &d);  // 0 for horizontal, 1 for vertical
-  void Scale(const double &ratio_width, const double &ratio_height);
-  void Rotate(const double &theta); // counter-clockwise, in rad
+  void Scale(const double &ratio_height, const double &ratio_width);
+  void Rotate(const double &theta);  // counter-clockwise, in rad
 };
 
 }  // namespace BITiC

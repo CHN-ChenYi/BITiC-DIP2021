@@ -4,9 +4,9 @@
 #include "BITiC.hpp"
 using namespace BITiC;
 
-void BMP::Translation(const int &delta_width, const int &delta_height) {
-  Bitmap new_bitmap(dib_header_.width_abs + abs(delta_width),
-                    dib_header_.height_abs + abs(delta_height));
+void BMP::Translation(const int &delta_height, const int &delta_width) {
+  Bitmap new_bitmap(dib_header_.height_abs + abs(delta_height),
+                    dib_header_.width_abs + abs(delta_width));
   const int width_bias = delta_width < 0 ? 0 : delta_width;
   const int height_bias = delta_height < 0 ? 0 : delta_height;
   for (int i = 0; i < dib_header_.height_abs; i++) {
@@ -24,10 +24,10 @@ void BMP::Mirror(const bool &horizontal, const bool &vertical) {
 
 void BMP::Shear(const bool &horizontal_or_vertical, const double &d) {
   Bitmap new_bitmap(
-      dib_header_.width_abs +
-          ceil((!horizontal_or_vertical) * dib_header_.height_abs * fabs(d)),
       dib_header_.height_abs +
-          ceil(horizontal_or_vertical * dib_header_.width_abs * fabs(d)));
+          ceil(horizontal_or_vertical * dib_header_.width_abs * fabs(d)),
+      dib_header_.width_abs +
+          ceil((!horizontal_or_vertical) * dib_header_.height_abs * fabs(d)));
   if (!horizontal_or_vertical) {  // horizontal
     const double bias = d >= 0 ? 0 : dib_header_.height_abs * fabs(d);
     for (int i = 0; i < dib_header_.height_abs; i++) {
@@ -46,10 +46,10 @@ void BMP::Shear(const bool &horizontal_or_vertical, const double &d) {
   dib_header_.height_abs = new_bitmap.height();
 }
 
-void BMP::Scale(const double &ratio_width, const double &ratio_height) {
+void BMP::Scale(const double &ratio_height, const double &ratio_width) {
   const int new_width = dib_header_.width_abs * ratio_width,
             new_height = dib_header_.height_abs * ratio_height;
-  Bitmap new_bitmap(new_width, new_height);
+  Bitmap new_bitmap(new_height, new_width);
   for (int i = 0; i < new_height; i++) {
     for (int j = 0; j < new_width; j++)
       new_bitmap[i][j] =
@@ -74,7 +74,7 @@ void BMP::Rotate(const double &theta) {
   UpdateMinMax(dib_header_.width_abs, dib_header_.height_abs);
   const int new_width = int(x_max - x_min) + 1,
             new_height = int(y_max - y_min) + 1;
-  Bitmap new_bitmap(new_width, new_height);
+  Bitmap new_bitmap(new_height, new_width);
   for (int i = 0; i < new_height; i++) {
     for (int j = 0; j < new_width; j++) {
       const int x_ = j + x_min;

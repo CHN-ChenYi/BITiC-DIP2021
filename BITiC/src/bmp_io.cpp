@@ -55,7 +55,7 @@ void BMP::read(const char filename[]) {
 
   // read image data
   file.seekg(bmp_header_.offbits);
-  bitmap_.Resize(dib_header_.width_abs, dib_header_.height_abs);
+  bitmap_.Resize(dib_header_.height_abs, dib_header_.width_abs);
   size_t line_size = dib_header_.width_abs * dib_header_.bit_count / 8;
   line_size += (4 - line_size % 4) % 4;
   for (int i = dib_header_.height >= 0 ? 0 : dib_header_.height_abs - 1;

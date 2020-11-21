@@ -74,16 +74,16 @@ void TestHis() {
 void TestGeo() {
   BMP image("geo_input.bmp"), image1(image), image2(image), image3(image),
       image4(image);
-  image.Translation(100, 100);
+  image.Translation(100, 200);
   image.write("translation.bmp");
 
-  image1.Mirror(true, true);
+  image1.Mirror(true, false);
   image1.write("mirror.bmp");
 
   image2.Shear(false, -0.7);
   image2.write("shear.bmp");
 
-  image3.Scale(0.75, 1.2);
+  image3.Scale(1.2, 0.75);
   image3.write("scale.bmp");
 
   image4.Rotate(acos(-1) / 3);

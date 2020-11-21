@@ -21,8 +21,8 @@ class Bitmap {
   Bitmap() : flag(true) {}
   Bitmap(const Bitmap &other)
       : flag(other.flag), rgb_(other.rgb_), yuv_(other.yuv_) {}
-  Bitmap(const int &width, const int &height) : flag(true) {
-    Resize(width, height);
+  Bitmap(const int &height, const int &width) : flag(true) {
+    Resize(height, width);
   }
 
   operator std::vector<std::vector<RGBColor>> &() {
@@ -61,7 +61,7 @@ class Bitmap {
       return yuv_.size();
   }
 
-  void Resize(const int width, const int height) {
+  void Resize(const int height, const int width) {
     if (flag) {
       auto old_height = rgb_.size();
       rgb_.resize(height);
@@ -90,5 +90,5 @@ class Bitmap {
   void ToRGB();
   void ToYUV();
 
-  RGBColor BilinearInterpolate(const double &x, const double &y);
+  RGBColor BilinearInterpolate(const double &h, const double &w);
 };

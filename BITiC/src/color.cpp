@@ -9,7 +9,7 @@ void Bitmap::ToRGB() {
   const int height = yuv_.size();
   const int width = yuv_[0].size();
   flag = true;
-  Resize(width, height);
+  Resize(height, width);
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
       // const int c = yuv_[i][j].y - 16;
@@ -36,7 +36,7 @@ void Bitmap::ToYUV() {
   const int height = rgb_.size();
   const int width = rgb_[0].size();
   flag = false;
-  Resize(width, height);
+  Resize(height, width);
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
       // yuv_[i][j] = YUVColor{
