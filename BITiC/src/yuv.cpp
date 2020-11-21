@@ -19,13 +19,10 @@ void BMP::GrayScale() {
   }
 }
 
-#include <cassert>
 void BMP::ModifyLuminance(std::function<double(const double &)> trans_func) {
   for (int i = 0; i < dib_header_.height_abs; i++) {
-    for (int j = 0; j < dib_header_.width_abs; j++) {
+    for (int j = 0; j < dib_header_.width_abs; j++)
       bitmap_.YUV()[i][j].y =
           Clamp<double>(trans_func(bitmap_.YUV()[i][j].y), 0, 255);
-      assert(0 <= bitmap_.YUV()[i][j].y && bitmap_.YUV()[i][j].y <= 255);
-    }
   }
 }

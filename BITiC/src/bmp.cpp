@@ -17,13 +17,17 @@ int32_t BMP::width() { return dib_header_.width_abs; }
 int32_t BMP::height() { return dib_header_.height_abs; }
 
 void BMP::SetWidth(const int32_t width) {
-  if (width < 0) return;
   dib_header_.width_abs = width;
-  for (int32_t i = 0; i < dib_header_.height_abs; i++) bitmap_[i].resize(width);
+  bitmap_.Resize(width, dib_header_.height_abs);
 }
 
 void BMP::SetHeight(const int32_t height) {
-  if (height < 0) return;
   dib_header_.height_abs = height;
   bitmap_.Resize(dib_header_.width_abs, height);
+}
+
+void BMP::Resize(const int32_t width, const int32_t height) {
+  dib_header_.width_abs = width;
+  dib_header_.height_abs = height;
+  bitmap_.Resize(width, height);
 }

@@ -7,10 +7,10 @@ using namespace BITiC;
 
 uint8_t BMP::OtsuMethod(const unsigned histogram[256], const int pixel_count) {
   double probability[256], mean[256];
-  probability[0] = 1.0 * histogram[0] / pixel_count;
+  probability[0] = 1. * histogram[0] / pixel_count;
   mean[0] = 0;
   for (int i = 1; i < 256; i++) {
-    const double prob = 1.0 * histogram[i] / pixel_count;
+    const double prob = 1. * histogram[i] / pixel_count;
     probability[i] = probability[i - 1] + prob;
     mean[i] = mean[i - 1] + i * prob;
   }
@@ -19,7 +19,7 @@ uint8_t BMP::OtsuMethod(const unsigned histogram[256], const int pixel_count) {
   for (int i = 0; i < 256 && probability[i] != 1; i++) {
     if (probability[i] != 0) {
       between = pow(mean[255] * probability[i] - mean[i], 2) /
-                (probability[i] * (1.0 - probability[i]));
+                (probability[i] * (1. - probability[i]));
       if (max_between < between) {
         max_between = between;
         threshold = i;

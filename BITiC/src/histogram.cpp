@@ -11,8 +11,7 @@ using namespace BITiC::Channel;
     for (int j = 0; j < dib_header_.width_abs; j++)  \
       bitmap_[i][j].x = trans_func(bitmap_[i][j].x); \
   }
-#include <cassert>
-#include <iostream>
+
 void BMP::HistogramTransforming(
     decltype(Channel::kGrayChannel) channel,
     std::function<double(const double &)> trans_func) {

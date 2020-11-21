@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <cstdint>
 #include <vector>
 
@@ -20,6 +21,9 @@ class Bitmap {
   Bitmap() : flag(true) {}
   Bitmap(const Bitmap &other)
       : flag(other.flag), rgb_(other.rgb_), yuv_(other.yuv_) {}
+  Bitmap(const int &width, const int &height) : flag(true) {
+    Resize(width, height);
+  }
 
   operator std::vector<std::vector<RGBColor>> &() {
     if (!flag) ToRGB();
@@ -34,9 +38,27 @@ class Bitmap {
     if (!flag) ToRGB();
     return rgb_[index];
   }
+  std::vector<std::vector<RGBColor>> &RGB() {
+    if (!flag) ToRGB();
+    return rgb_;
+  }
   std::vector<std::vector<YUVColor>> &YUV() {
     if (flag) ToYUV();
     return yuv_;
+  }
+
+  int width() const {
+    if (flag)
+      return rgb_[0].size();
+    else
+      return yuv_[0].size();
+  }
+
+  int height() const {
+    if (flag)
+      return rgb_.size();
+    else
+      return yuv_.size();
   }
 
   void Resize(const int width, const int height) {
@@ -51,6 +73,22 @@ class Bitmap {
     }
   }
 
+  void Reverse(const bool &horizontal, const bool &vertical) {
+    if (flag) {
+      if (vertical) std::reverse(rgb_.begin(), rgb_.end());
+      if (horizontal) {
+        for (auto &it : rgb_) std::reverse(it.begin(), it.end());
+      }
+    } else {
+      if (vertical) std::reverse(yuv_.begin(), yuv_.end());
+      if (horizontal) {
+        for (auto &it : yuv_) std::reverse(it.begin(), it.end());
+      }
+    }
+  }
+
   void ToRGB();
   void ToYUV();
+
+  RGBColor BilinearInterpolate(const double &x, const double &y);
 };

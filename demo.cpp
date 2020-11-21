@@ -1,5 +1,4 @@
 #include <cmath>
-#include <iostream>
 
 #include "BITiC.hpp"
 using namespace std;
@@ -12,18 +11,12 @@ void TestYUV() {
   image2.GrayScale();
   image2.write("grayscale.bmp");
 
-  int delta;
-  cout << "Please input the delta of luminance" << endl;
-  cin >> delta;
-  // delta = 50;
+  int delta = 50;
   BMP image3(image);
   image3.ModifyLuminance([delta](const double &y) { return y + delta; });
   image3.write("luminance_linear.bmp");
 
-  double ratio;
-  cout << "Please input the exponent of luminance" << endl;
-  cin >> ratio;
-  // ratio = 2;
+  double ratio = 2;
   BMP image4(image);
   image4.ModifyLuminance([ratio](const double &y) {
     return int(exp(log(y / 255.0) * ratio) * 255);  // ratio > 1 for darker
@@ -78,9 +71,29 @@ void TestHis() {
   image3.write("logarithmic_enhance.bmp");
 }
 
+void TestGeo() {
+  BMP image("geo_input.bmp"), image1(image), image2(image), image3(image),
+      image4(image);
+  image.Translation(100, 100);
+  image.write("translation.bmp");
+
+  image1.Mirror(true, true);
+  image1.write("mirror.bmp");
+
+  image2.Shear(false, -0.7);
+  image2.write("shear.bmp");
+
+  image3.Scale(0.75, 1.2);
+  image3.write("scale.bmp");
+
+  image4.Rotate(acos(-1) / 3);
+  image4.write("rotate.bmp");
+}
+
 int main() {
   // TestYUV();
   // TestBin();
-  TestHis();
+  // TestHis();
+  TestGeo();
   return 0;
 }
