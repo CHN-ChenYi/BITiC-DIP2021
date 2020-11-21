@@ -45,3 +45,17 @@ void BMP::Shear(const bool &horizontal_or_vertical, const double &d) {
   dib_header_.width_abs = new_bitmap.width();
   dib_header_.height_abs = new_bitmap.height();
 }
+
+void BMP::Scale(const double &ratio_width, const double &ratio_height) {
+  const int new_width = dib_header_.width_abs * ratio_width,
+            new_height = dib_header_.height_abs * ratio_height;
+  Bitmap new_bitmap(new_width, new_height);
+  for (int i = 0; i < new_height; i++) {
+    for (int j = 0; j < new_width; j++)
+      new_bitmap[i][j] =
+          bitmap_.BilinearInterpolate(i / ratio_height, j / ratio_width);
+  }
+  bitmap_ = new_bitmap;
+  dib_header_.width_abs = new_width;
+  dib_header_.height_abs = new_height;
+}

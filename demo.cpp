@@ -1,5 +1,4 @@
 #include <cmath>
-#include <iostream>
 
 #include "BITiC.hpp"
 using namespace std;
@@ -73,7 +72,7 @@ void TestHis() {
 }
 
 void TestGeo() {
-  BMP image("geo_input.bmp"), image1(image), image2(image);
+  BMP image("geo_input.bmp"), image1(image), image2(image), image3(image);
   image.Translation(100, 100);
   image.write("translation.bmp");
 
@@ -82,6 +81,9 @@ void TestGeo() {
 
   image2.Shear(false, -0.7);
   image2.write("shear.bmp");
+
+  image3.Scale(0.75, 1.2);
+  image3.write("scale.bmp");
 }
 
 int main() {

@@ -89,4 +89,6 @@ class Bitmap {
 
   void ToRGB();
   void ToYUV();
+
+  RGBColor BilinearInterpolate(const double &x, const double &y);
 };
