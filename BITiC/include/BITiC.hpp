@@ -100,6 +100,7 @@ class BMP {
                    &structing_element);  // must be binarized before calling
 
   void Translation(const int &delta_width, const int &delta_height);
+  void Mirror(const bool &horizontal, const bool &vertical);
 };
 
 }  // namespace BITiC

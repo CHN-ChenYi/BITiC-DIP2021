@@ -79,9 +79,12 @@ void TestHis() {
 }
 
 void TestGeo() {
-  BMP image("geo_input.bmp");
+  BMP image("geo_input.bmp"), image1(image);
   image.Translation(100, 100);
   image.write("translation.bmp");
+
+  image1.Mirror(true, true);
+  image1.write("mirror.bmp");
 }
 
 int main() {
