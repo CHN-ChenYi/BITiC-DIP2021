@@ -90,10 +90,31 @@ void TestGeo() {
   image4.write("rotate.bmp");
 }
 
+void TestConv() {
+  BMP image("conv_input.bmp"), image1 = image, image2 = image;
+  image.MeanFilter();
+  image.write("mean_filter.bmp");
+
+  std::vector<std::tuple<int, int, double>> kernel;
+  for (int i = -1; i <= 1; i++) {
+    for (int j = -1; j <= 1; j++) {
+      kernel.push_back(std::make_tuple(i, j, !i && !j ? 8.0 : -1.0));
+    }
+  }
+  image1.Conv(kernel, Channel::kRedChannel);
+  image1.Conv(kernel, Channel::kGreenChannel);
+  image1.Conv(kernel, Channel::kBlueChannel);
+  image1.write("laplacian_core.bmp");
+
+  image2.LaplacianEnhancement();
+  image2.write("laplacian_enhancement.bmp");
+}
+
 int main() {
   // TestYUV();
   // TestBin();
   // TestHis();
-  TestGeo();
+  // TestGeo();
+  TestConv();
   return 0;
 }

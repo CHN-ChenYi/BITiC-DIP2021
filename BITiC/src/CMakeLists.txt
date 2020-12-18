@@ -6,5 +6,6 @@ set(BITiC_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/binary.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/histogram.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/geo_trans.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/conv.cpp
   PARENT_SCOPE
 )

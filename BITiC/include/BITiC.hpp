@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
+#include <tuple>
 
 #include "color.hpp"
 namespace BITiC {
@@ -105,6 +106,12 @@ class BMP {
              const double &d);  // 0 for horizontal, 1 for vertical
   void Scale(const double &ratio_height, const double &ratio_width);
   void Rotate(const double &theta);  // counter-clockwise, in rad
+
+  // kernel example: (0, 0, 1) (-1, 0, 1) (1, 0, 1)
+  void NormalizedConv(std::vector<std::tuple<int, int, double>> &kernel, decltype(Channel::kGrayChannel) channel);
+  void Conv(std::vector<std::tuple<int, int, double>> &kernel, decltype(Channel::kGrayChannel) channel, int padding_number = 0);
+  void MeanFilter();
+  void LaplacianEnhancement();
 };
 
 }  // namespace BITiC

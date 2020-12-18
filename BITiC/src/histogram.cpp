@@ -6,29 +6,27 @@
 using namespace BITiC;
 using namespace BITiC::Channel;
 
-#define RGBChannelTransforming(x)                    \
-  for (int i = 0; i < dib_header_.height_abs; i++) { \
-    for (int j = 0; j < dib_header_.width_abs; j++)  \
-      bitmap_[i][j].x = trans_func(bitmap_[i][j].x); \
+#define Transforming(x)                               \
+  for (int i = 0; i < dib_header_.height_abs; i++) {  \
+    for (int j = 0; j < dib_header_.width_abs; j++) { \
+      x = trans_func(x);                              \
+    }                                                 \
   }
 
 void BMP::HistogramTransforming(
     decltype(Channel::kGrayChannel) channel,
     std::function<double(const double &)> trans_func) {
   if (channel.none()) {
-    for (int i = 0; i < dib_header_.height_abs; i++) {
-      for (int j = 0; j < dib_header_.width_abs; j++)
-        bitmap_.YUV()[i][j].y = trans_func(bitmap_.YUV()[i][j].y);
-    }
+    Transforming(bitmap_.YUV()[i][j].y);
   } else {
     if ((channel & kRedChannel).any()) {
-      RGBChannelTransforming(r);
+      Transforming(bitmap_[i][j].r);
     }
     if ((channel & kGreenChannel).any()) {
-      RGBChannelTransforming(g);
+      Transforming(bitmap_[i][j].g);
     }
     if ((channel & kBlueChannel).any()) {
-      RGBChannelTransforming(b);
+      Transforming(bitmap_[i][j].b);
     }
   }
 }
