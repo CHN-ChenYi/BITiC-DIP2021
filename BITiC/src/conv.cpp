@@ -82,9 +82,7 @@ void BMP::MeanFilter() {
       kernel.push_back(std::make_tuple(i, j, 1.0));
     }
   }
-  NormalizedConv(kernel, kRedChannel);
-  NormalizedConv(kernel, kGreenChannel);
-  NormalizedConv(kernel, kBlueChannel);
+  NormalizedConv(kernel, kRedChannel | kGreenChannel | kBlueChannel);
 }
 
 void BMP::LaplacianEnhancement(const double &ratio) {
@@ -94,7 +92,5 @@ void BMP::LaplacianEnhancement(const double &ratio) {
       kernel.push_back(std::make_tuple(i, j, !i && !j ? 1 + 8 * ratio : -ratio));
     }
   }
-  NormalizedConv(kernel, kRedChannel);
-  NormalizedConv(kernel, kGreenChannel);
-  NormalizedConv(kernel, kBlueChannel);
+  NormalizedConv(kernel, kRedChannel | kGreenChannel | kBlueChannel);
 }

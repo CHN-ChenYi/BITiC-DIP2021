@@ -102,9 +102,7 @@ void TestConv() {
       kernel.push_back(std::make_tuple(i, j, !i && !j ? 8.0 : -1.0));
     }
   }
-  image1.Conv(kernel, Channel::kRedChannel);
-  image1.Conv(kernel, Channel::kGreenChannel);
-  image1.Conv(kernel, Channel::kBlueChannel);
+  image1.Conv(kernel, Channel::kRedChannel | Channel::kGreenChannel | Channel::kBlueChannel);
   image1.write("laplacian_core.bmp");
 
   double x;
