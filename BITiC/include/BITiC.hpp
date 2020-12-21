@@ -111,7 +111,7 @@ class BMP {
   void NormalizedConv(std::vector<std::tuple<int, int, double>> &kernel, decltype(Channel::kGrayChannel) channel);
   void Conv(std::vector<std::tuple<int, int, double>> &kernel, decltype(Channel::kGrayChannel) channel, int padding_number = 0);
   void MeanFilter();
-  void LaplacianEnhancement();
+  void LaplacianEnhancement(const double &ratio);
 };
 
 }  // namespace BITiC
