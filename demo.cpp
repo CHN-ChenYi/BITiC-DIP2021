@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 
 #include "BITiC.hpp"
 using namespace std;
@@ -106,7 +107,9 @@ void TestConv() {
   image1.Conv(kernel, Channel::kBlueChannel);
   image1.write("laplacian_core.bmp");
 
-  image2.LaplacianEnhancement();
+  double x;
+  cin >> x;
+  image2.LaplacianEnhancement(x);
   image2.write("laplacian_enhancement.bmp");
 }
 

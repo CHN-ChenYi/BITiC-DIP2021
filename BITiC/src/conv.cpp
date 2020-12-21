@@ -86,12 +86,12 @@ void BMP::MeanFilter() {
   NormalizedConv(kernel, kGreenChannel);
   NormalizedConv(kernel, kBlueChannel);
 }
- 
-void BMP::LaplacianEnhancement() {
+
+void BMP::LaplacianEnhancement(const double &ratio) {
   std::vector<std::tuple<int, int, double>> kernel;
   for (int i = -1; i <= 1; i++) {
     for (int j = -1; j <= 1; j++) {
-      kernel.push_back(std::make_tuple(i, j, !i && !j ? 9.0 : -1.0));
+      kernel.push_back(std::make_tuple(i, j, !i && !j ? 1 + 8 * ratio : -ratio));
     }
   }
   NormalizedConv(kernel, kRedChannel);
