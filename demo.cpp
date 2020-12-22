@@ -111,11 +111,18 @@ void TestConv() {
   image2.write("laplacian_enhancement.bmp");
 }
 
+void TestBilateralFilter() {
+  BMP image("bin_filter_input.bmp");
+  image.BilateralFilter(5., 10.);
+  image.write("bilateral_filter.bmp");
+}
+
 int main() {
   // TestYUV();
   // TestBin();
   // TestHis();
   // TestGeo();
-  TestConv();
+  // TestConv();
+  TestBilateralFilter();
   return 0;
 }
