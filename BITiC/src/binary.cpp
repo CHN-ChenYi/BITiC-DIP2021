@@ -53,8 +53,8 @@ void BMP::Binarization() {
   delete[] y;
 }
 
-void BMP::Binarization(const unsigned window_side_length,
-                       const unsigned overlap_length) {
+void BMP::Binarization(const unsigned &window_side_length,
+                       const unsigned &overlap_length) {
   if (window_side_length <= overlap_length)
     throw std::runtime_error(
         "window_side_length must be greater than overlap_length");

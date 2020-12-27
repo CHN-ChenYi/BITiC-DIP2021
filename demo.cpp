@@ -113,7 +113,7 @@ void TestConv() {
 
 void TestBilateralFilter() {
   BMP image("bin_filter_input.bmp");
-  image.BilateralFilter(5., 10.);
+  image.BilateralFilter(5., 10., 5);
   image.write("bilateral_filter.bmp");
 }
 
