@@ -102,9 +102,7 @@ void TestConv() {
       kernel.push_back(std::make_tuple(i, j, !i && !j ? 8.0 : -1.0));
     }
   }
-  image1.Conv(kernel, Channel::kRedChannel);
-  image1.Conv(kernel, Channel::kGreenChannel);
-  image1.Conv(kernel, Channel::kBlueChannel);
+  image1.Conv(kernel, Channel::kRedChannel | Channel::kGreenChannel | Channel::kBlueChannel);
   image1.write("laplacian_core.bmp");
 
   double x;
@@ -113,11 +111,18 @@ void TestConv() {
   image2.write("laplacian_enhancement.bmp");
 }
 
+void TestBilateralFilter() {
+  BMP image("bin_filter_input.bmp");
+  image.BilateralFilter(5., 10., 5);
+  image.write("bilateral_filter.bmp");
+}
+
 int main() {
   // TestYUV();
   // TestBin();
   // TestHis();
   // TestGeo();
-  TestConv();
+  // TestConv();
+  TestBilateralFilter();
   return 0;
 }

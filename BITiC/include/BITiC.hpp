@@ -5,9 +5,9 @@
 #include <fstream>
 #include <functional>
 #include <stdexcept>
+#include <tuple>
 #include <utility>
 #include <vector>
-#include <tuple>
 
 #include "color.hpp"
 namespace BITiC {
@@ -88,8 +88,8 @@ class BMP {
           255);  // sample_size only works for the gray channel
 
   void Binarization();  // global version
-  void Binarization(const unsigned window_side_length,
-                    const unsigned overlap_length);  // local adaptive version
+  void Binarization(const unsigned &window_side_length,
+                    const unsigned &overlap_length);  // local adaptive version
 
   void Erosion(std::vector<std::pair<int, int>>
                    &structing_element);  // must be binarized before calling
@@ -108,10 +108,14 @@ class BMP {
   void Rotate(const double &theta);  // counter-clockwise, in rad
 
   // kernel example: (0, 0, 1) (-1, 0, 1) (1, 0, 1)
-  void NormalizedConv(std::vector<std::tuple<int, int, double>> &kernel, decltype(Channel::kGrayChannel) channel);
-  void Conv(std::vector<std::tuple<int, int, double>> &kernel, decltype(Channel::kGrayChannel) channel, int padding_number = 0);
+  void NormalizedConv(std::vector<std::tuple<int, int, double>> &kernel,
+                      decltype(Channel::kGrayChannel) channel);
+  void Conv(std::vector<std::tuple<int, int, double>> &kernel,
+            decltype(Channel::kGrayChannel) channel, int padding_number = 0);
   void MeanFilter();
   void LaplacianEnhancement(const double &ratio);
+
+  void BilateralFilter(const double &sigma_s, const double &sigma_r, const unsigned &half_window_side_length);
 };
 
 }  // namespace BITiC

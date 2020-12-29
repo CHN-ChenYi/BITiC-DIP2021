@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "BITiC.hpp"
 #include "lib.hpp"
 
@@ -82,19 +84,55 @@ void BMP::MeanFilter() {
       kernel.push_back(std::make_tuple(i, j, 1.0));
     }
   }
-  NormalizedConv(kernel, kRedChannel);
-  NormalizedConv(kernel, kGreenChannel);
-  NormalizedConv(kernel, kBlueChannel);
+  NormalizedConv(kernel, kRedChannel | kGreenChannel | kBlueChannel);
 }
 
 void BMP::LaplacianEnhancement(const double &ratio) {
   std::vector<std::tuple<int, int, double>> kernel;
   for (int i = -1; i <= 1; i++) {
     for (int j = -1; j <= 1; j++) {
-      kernel.push_back(std::make_tuple(i, j, !i && !j ? 1 + 8 * ratio : -ratio));
+      kernel.push_back(
+          std::make_tuple(i, j, !i && !j ? 1 + 8 * ratio : -ratio));
     }
   }
-  NormalizedConv(kernel, kRedChannel);
-  NormalizedConv(kernel, kGreenChannel);
-  NormalizedConv(kernel, kBlueChannel);
+  NormalizedConv(kernel, kRedChannel | kGreenChannel | kBlueChannel);
+}
+
+inline double G(const double &x_square, const double &sigma) {
+  // static const double ratio = sqrt(2 * acos(-1.));
+  return exp(-x_square / (2 * pow(sigma, 2)));  // / (sigma * ratio);
+}
+
+void BMP::BilateralFilter(const double &sigma_s, const double &sigma_r, const unsigned &half_window_side_length) {
+  Bitmap new_bitmap = bitmap_;
+  for (int i = 0; i < dib_header_.height_abs; i++) {
+    for (int j = 0; j < dib_header_.width_abs; j++) {
+      printf("\rBilateralFiltering: %5d %5d", i, j);
+      const int now_r = bitmap_[i][j].r, now_g = bitmap_[i][j].g,
+                now_b = bitmap_[i][j].b;
+      double sum_r = 0, sum_g = 0, sum_b = 0, w_r = 0, w_g = 0, w_b = 0,
+             tmp = 0, tmp_r = 0, tmp_g = 0, tmp_b = 0;
+      const int h_upper_bound = std::min<int>(dib_header_.height - 1, i + half_window_side_length);
+      const int w_upper_bound = std::min<int>(dib_header_.width - 1, j + half_window_side_length);
+      for (int h = std::max<int>(0, i - half_window_side_length); h <= h_upper_bound; h++) {
+        for (int w = std::max<int>(0, j - half_window_side_length); w <= w_upper_bound; w++) {
+          tmp = G(pow(i - h, 2) + pow(j - w, 2), sigma_s);
+          tmp_r = tmp * G(pow(now_r - bitmap_[h][w].r, 2), sigma_r);
+          tmp_g = tmp * G(pow(now_g - bitmap_[h][w].g, 2), sigma_r);
+          tmp_b = tmp * G(pow(now_b - bitmap_[h][w].b, 2), sigma_r);
+          w_r += tmp_r;
+          w_g += tmp_g;
+          w_b += tmp_b;
+          sum_r += tmp_r * bitmap_[h][w].r;
+          sum_g += tmp_g * bitmap_[h][w].g;
+          sum_b += tmp_b * bitmap_[h][w].b;
+        }
+      }
+      new_bitmap[i][j] = RGBColor{decltype(RGBColor::b)(sum_b / w_b),
+                                  decltype(RGBColor::g)(sum_g / w_g),
+                                  decltype(RGBColor::r)(sum_r / w_r)};
+    }
+  }
+  printf("\nBilateralFilter Done!\n");
+  bitmap_ = new_bitmap;
 }
