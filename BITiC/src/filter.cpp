@@ -114,8 +114,8 @@ void BMP::BilateralFilter(const double &sigma_s, const double &sigma_r, const un
              tmp = 0, tmp_r = 0, tmp_g = 0, tmp_b = 0;
       const int h_upper_bound = std::min<int>(dib_header_.height - 1, i + half_window_side_length);
       const int w_upper_bound = std::min<int>(dib_header_.width - 1, j + half_window_side_length);
-      for (int h = std::max<int>(0, i - half_window_side_length); h < dib_header_.height; h++) {
-        for (int w = std::max<int>(0, j - half_window_side_length); w < dib_header_.width; w++) {
+      for (int h = std::max<int>(0, i - half_window_side_length); h <= h_upper_bound; h++) {
+        for (int w = std::max<int>(0, j - half_window_side_length); w <= w_upper_bound; w++) {
           tmp = G(pow(i - h, 2) + pow(j - w, 2), sigma_s);
           tmp_r = tmp * G(pow(now_r - bitmap_[h][w].r, 2), sigma_r);
           tmp_g = tmp * G(pow(now_g - bitmap_[h][w].g, 2), sigma_r);
